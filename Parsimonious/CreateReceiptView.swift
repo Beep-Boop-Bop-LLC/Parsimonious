@@ -17,6 +17,8 @@ struct CreateReceiptView: View {
     @FocusState var focusDescription: Bool
     @FocusState var focusAmount: Bool
     
+    var completion: () -> ()
+    
     var body: some View {
         VStack {
             ParsimoniousHeaderView()
@@ -31,7 +33,15 @@ struct CreateReceiptView: View {
             
             Spacer()
             
-            AddReceiptView(amount: $inputAmount, description: $inputDescription, note: $inputNote, category: $selectedCategory)
+            AddReceiptView(amount: $inputAmount, description: $inputDescription, note: $inputNote, category: $selectedCategory, completion: {
+                completion()
+                inputAmount = "$0.00"
+                inputDescription = ""
+                inputNote = ""
+                selectedCategory = nil
+                focusDescription = true
+                focusAmount = false
+            })
         }
         .background(Color.paleGreen.ignoresSafeArea())
         .onAppear {

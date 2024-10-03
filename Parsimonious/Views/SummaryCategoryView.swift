@@ -17,36 +17,49 @@ struct SummaryCategoryView: View {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 10) {
                     ForEach(["All"] + Array(controller.categories), id: \.self) { category in
-                        Button(action: {
-                            if category == "All" {
-                                categories = Set()
-                                if !categories.contains("All") {
-                                    categories.insert("All")
-                                    for otherCategory in controller.categories {
-                                        categories.insert(otherCategory)
-                                    }
-                                }
-                                return
-                            }
-                            
-                            if categories.contains(category) {
-                                categories.remove(category)
-                            } else {
-                                categories.insert(category)
-                            }
-                        }) {
-                            Text(category)
-                                .font(.system(size: 20, weight: .semibold))
-                                .foregroundColor(categories.contains(category) ? .seafoamGreen : .gray)
-                                .padding()
-                                .background(categories.contains(category) ? Color.white : Color.clear)
-                                .cornerRadius(8)
-                        }
+                        SummaryCategoryButton(category: category, categories: $categories)
                     }
                 }
                 .padding(.horizontal)
             }
             .frame(height: 60)
+        }
+    }
+}
+
+struct SummaryCategoryButton: View {
+    let category: String
+    @Binding var categories: Set<String>
+    @EnvironmentObject var controller: ReceiptController
+
+    var body: some View {
+        Button(action: {
+            if category == "All" {
+                if categories.contains("All") {
+                    categories = Set()
+                } else {
+                    categories = Set(controller.categories)
+                    categories.insert("All")
+                }
+                return
+            }
+
+            if categories.contains(category) {
+                categories.remove(category)
+                categories.remove("All")
+            } else {
+                categories.insert(category)
+                if categories.count == controller.categories.count {
+                    categories.insert("All")
+                }
+            }
+        }) {
+            Text(category)
+                .font(.system(size: 20, weight: .semibold))
+                .foregroundColor(categories.contains(category) ? .seafoamGreen : .gray)
+                .padding()
+                .background(categories.contains(category) ? Color.white : Color.clear)
+                .cornerRadius(8)
         }
     }
 }

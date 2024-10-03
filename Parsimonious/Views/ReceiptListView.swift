@@ -13,32 +13,36 @@ struct ReceiptListView: View {
     
     @Binding var categories: Set<String>
     
-    var myReceipts: [Receipt] {
+    var receipts: [Receipt] {
         controller.receipts.filter { categories.contains($0.category) }
     }
-    
+        
     var body: some View {
-        List {
-            ForEach(myReceipts.indices, id: \.self) { receipt in
-                HStack {
-                    DateView(receipt.date).frame(maxHeight: 50)
-                    
-                    VStack {
-                        Text(receipt.description)
-                            .font(.body)
-                            .fontWeight(.bold)
+        ZStack {
+            Color.paleGreen.ignoresSafeArea()
+            List {
+                ForEach(receipts, id: \.self) { receipt in
+                    HStack {
+                        DateView(receipt.date).frame(maxHeight: 50)
                         
-                        Text(receipt.category)
-                            .font(.caption2)
-                            .foregroundStyle(.gray)
+                        VStack {
+                            Text(receipt.description)
+                                .font(.body)
+                                .fontWeight(.bold)
+                            
+                            Text(receipt.category)
+                                .font(.caption2)
+                                .foregroundStyle(.gray)
+                        }
+                        Spacer()
+                        Text(String(format: "$%.2f", receipt.amount))
+                            .font(.body)
+                            .padding(.top, 10)
+                            .foregroundStyle(Color.seafoamGreen)
                     }
-                    
-                    Text("$\((100.0*receipt.amount).rounded() / 100.0)")
-                        .font(.body)
-                        .padding(.top, 10)
-                        .foregroundStyle(.seafoamGreen)
                 }
             }
+            .scrollContentBackground(.hidden)
         }
     }
 }

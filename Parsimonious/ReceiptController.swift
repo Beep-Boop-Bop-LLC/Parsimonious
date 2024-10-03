@@ -36,7 +36,8 @@ class ReceiptController: ObservableObject {
     
 }
 
-struct Receipt {
+struct Receipt: Identifiable, Hashable {
+    var id = UUID()
     var date: ReceiptDate
     var description: String
     var note: String?

@@ -14,6 +14,12 @@ struct AddReceiptView: View {
     @Binding var note: String
     @Binding var category: String?
     
+    var completion: () -> ()
+    
+    var isComplete: Bool {
+        return amount != "" && description != "" && category != nil
+    }
+    
     var body: some View {
         GeometryReader { geometry in
             HStack {
@@ -21,25 +27,22 @@ struct AddReceiptView: View {
                     let filtered = amount.filter { "0123456789".contains($0) }
                     if let cents = Int(filtered), let cat = category {
                         controller.addReceipt(amount: Double(cents)/100, description: description, note: note, category: cat)
+                        completion()
                     }
                 }) {
                     Text("Add")
                         .font(.system(size: 20, weight: .semibold))
                         .padding()
-                        .foregroundColor(isComplete() ? .seafoamGreen : .white)
+                        .foregroundColor(isComplete ? .seafoamGreen : .white)
                 }
                 .padding(.horizontal)
-                .disabled(!isComplete())
+                .disabled(!isComplete)
             }
             .frame(width: geometry.size.width)
-            .background(isComplete() ? Color.white : Color.gray.opacity(0.5))
+            .background(isComplete ? Color.white : Color.gray.opacity(0.5))
         }
         .frame(height: 50)
         .cornerRadius(8)
         .padding()
-    }
-    
-    private func isComplete() -> Bool {
-        return false
     }
 }

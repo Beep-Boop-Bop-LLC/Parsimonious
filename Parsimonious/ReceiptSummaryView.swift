@@ -18,6 +18,7 @@ struct ReceiptSummaryView: View {
             
             ReceiptListView(categories: $selectedCategories)
         }
+        .background(Color.paleGreen.ignoresSafeArea())
         .onAppear {
             selectedCategories.insert("All")
             for category in controller.categories {

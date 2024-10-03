@@ -9,17 +9,21 @@ import SwiftUI
 
 struct ContentView: View {
 
+    @State private var selectedIndex: Int = 0
+    
     var body: some View {
-        TabView {
-            CreateReceiptView()
+        TabView(selection: $selectedIndex) {
+            CreateReceiptView(completion: { selectedIndex = 1 })
                 .tabItem {
                     Label("Add Receipt", systemImage: "plus.circle")
                 }
+                .tag(0)
             
-//            ReceiptSummaryView()
-//                .tabItem {
-//                    Label("Summary", systemImage: "chart.pie")
-//                }
+            ReceiptSummaryView()
+                .tabItem {
+                    Label("Summary", systemImage: "chart.pie")
+                }
+                .tag(1)
         }
     }
     
