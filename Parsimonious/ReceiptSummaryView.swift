@@ -13,10 +13,24 @@ struct ReceiptSummaryView: View {
     @State var selectedCategories: Set<String> = Set()
     
     var body: some View {
-        VStack {
-            SummaryCategoryView(categories: $selectedCategories)
+        ZStack{
+            LinearGradient(
+                gradient: Gradient(colors: [Color.white.opacity(0.2), Color.white.opacity(0.8)]),
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .ignoresSafeArea(edges: .all) // Ensures the gradient extends beyond the safe area
+            .frame(maxWidth: .infinity, maxHeight: .infinity) // Fills the entire superview
             
-            ReceiptListView(categories: $selectedCategories)
+            VStack {
+                ParsimoniousHeaderView()
+                
+                SummaryCategoryView(categories: $selectedCategories)
+                
+                ReceiptListView(categories: $selectedCategories)
+            }
+            .padding(.bottom, 20) // Add some padding at the bottom for scrolling
+
         }
         .background(Color.paleGreen.ignoresSafeArea())
         .onAppear {

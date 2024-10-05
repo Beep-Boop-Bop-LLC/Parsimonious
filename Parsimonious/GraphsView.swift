@@ -1,201 +1,121 @@
-//
-//  GraphsView.swift
-//  Parsimonious
-//
-//  Created by Zach Venanzi on 10/4/24.
-//
-
 import SwiftUI
 
-// Dummy data for categories
-struct CategoryData {
-    var name: String
-    var totalAmount: Double
-    var budgetedAmount: Double
-    var averageAmount: Double
+struct MonthlyExpenditure: Identifiable {
+    let id = UUID()
+    let month: String
+    let expenditure: Double
+    let budget: Double
 }
 
-// Sample categories data
-var categories: [CategoryData] = [
-    CategoryData(name: "Food", totalAmount: 600, budgetedAmount: 500, averageAmount: 480),
-    CategoryData(name: "Transport", totalAmount: 250, budgetedAmount: 220, averageAmount: 190),
-    CategoryData(name: "Entertainment", totalAmount: 75, budgetedAmount: 400, averageAmount: 350),
-    CategoryData(name: "Health & Fitness", totalAmount: 250, budgetedAmount: 200, averageAmount: 195),
-    CategoryData(name: "Utilities", totalAmount: 60, budgetedAmount: 300, averageAmount: 280),
-    CategoryData(name: "Travel", totalAmount: 80, budgetedAmount: 450, averageAmount: 420),
-    CategoryData(name: "Personal Care", totalAmount: 40, budgetedAmount: 180, averageAmount: 170),
-    CategoryData(name: "Food", totalAmount: 600, budgetedAmount: 500, averageAmount: 480)
-]
-
-struct GraphsView: View {
-    var body: some View {
-        ZStack {
-            LinearGradient(
-                gradient: Gradient(colors: [Color.white.opacity(0.2), Color.white.opacity(0.8)]),
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .ignoresSafeArea(edges: .all)
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-
-            VStack {
-                ParsimoniousHeaderView()
-                
-                StackedBarChartView(categories: categories)
-
-                LegendView(categories: categories)
-                    .padding(.top, 10)
-                    .padding(.horizontal)
-                
-                ScrollView {
-                    ForEach(categories, id: \.name) { category in
-                        HorizontalBarGraphView(category: category.name,
-                                                totalAmount: category.totalAmount,
-                                                budgetedAmount: category.budgetedAmount,
-                                                averageAmount: category.averageAmount)
-                            .padding(.horizontal)
-                    }
-                }
-                .padding(.bottom, 20) // Add some padding at the bottom for scrolling
-            }
-        }
-        .background(Color.paleGreen.ignoresSafeArea())
-    }
-}
-
-struct StackedBarChartView: View {
-    var categories: [CategoryData]
-
-    let categoryColors: [Color] = [
-        Color.green.opacity(0.85),      // Light Green
-        Color.green.opacity(0.55),      // Medium Green
-        Color.green.opacity(0.20),      // Darker Green
-        Color.seafoamGreen.opacity(0.4),      // Slightly darker Green
-        Color.seafoamGreen.opacity(0.1),      // More vibrant Green
-        Color.seafoamGreen.opacity(1.0),      // Very light Green
-        Color.green.opacity(0.5)       // Pale Green
+struct BarGraphView: View {
+    @State private var selectedMonth: MonthlyExpenditure? = nil
+    @State private var currentYear = 2024
+    
+    // Sample data for expenditures and budgets
+    var months: [MonthlyExpenditure] = [
+        MonthlyExpenditure(month: "Jan", expenditure: 400, budget: 500),
+        MonthlyExpenditure(month: "Feb", expenditure: 600, budget: 500),
+        MonthlyExpenditure(month: "Mar", expenditure: 550, budget: 500),
+        MonthlyExpenditure(month: "Apr", expenditure: 480, budget: 500),
+        MonthlyExpenditure(month: "May", expenditure: 620, budget: 500),
+        MonthlyExpenditure(month: "Jun", expenditure: 500, budget: 500),
+        MonthlyExpenditure(month: "Jul", expenditure: 450, budget: 500),
+        MonthlyExpenditure(month: "Aug", expenditure: 700, budget: 500),
+        MonthlyExpenditure(month: "Sep", expenditure: 670, budget: 500),
+        MonthlyExpenditure(month: "Oct", expenditure: 530, budget: 500),
+        MonthlyExpenditure(month: "Nov", expenditure: 590, budget: 500),
+        MonthlyExpenditure(month: "Dec", expenditure: 550, budget: 500)
     ]
-
+    
+    var maxExpenditure: Double {
+        months.map { $0.expenditure }.max() ?? 0
+    }
+    
     var body: some View {
         VStack {
-            GeometryReader { geometry in
-                let totalAmount = categories.reduce(0) { $0 + $1.totalAmount }
-                HStack(spacing: 0) {
-                    ForEach(categories.indices, id: \.self) { index in
-                        let category = categories[index]
-                        let percentage = category.totalAmount / totalAmount
-                        Rectangle()
-                            .fill(categoryColors[index % categoryColors.count])
-                            .frame(width: geometry.size.width * CGFloat(percentage), height: geometry.size.height)
-                            .cornerRadius(5)
+            // Main graph container
+            ZStack {
+                // Y-axis and bars
+                HStack(alignment: .bottom, spacing: 10) {
+                    // Y-Axis labels
+                    VStack {
+                        ForEach([0, 200, 400, 600, 800], id: \.self) { amount in
+                            Text("$\(amount)")
+                                .font(.caption)
+                            Spacer()
+                        }
+                    }
+                    .frame(width: 40)
+                    
+                    // Scrollable bar graph
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(alignment: .bottom, spacing: 20) {
+                            ForEach(months) { month in
+                                BarView(month: month,
+                                        isSelected: month.id == selectedMonth?.id)
+                                .onTapGesture {
+                                    selectedMonth = month
+                                }
+                            }
+                        }
+                        .padding()
                     }
                 }
-                .cornerRadius(5)
-            }
-            .frame(height: 30) // Set a fixed height for the bar chart
-        }
-    }
-}
-
-struct LegendView: View {
-    var categories: [CategoryData]
-    
-    let categoryColors: [Color] = [
-        Color.green.opacity(0.85),      // Light Green
-        Color.green.opacity(0.55),      // Medium Green
-        Color.green.opacity(0.20),      // Darker Green
-        Color.seafoamGreen.opacity(0.4),      // Slightly darker Green
-        Color.seafoamGreen.opacity(0.1),      // More vibrant Green
-        Color.seafoamGreen.opacity(1.0),      // Very light Green
-        Color.green.opacity(0.5)       // Pale Green
-    ]
-
-    
-    var body: some View {
-        let columns = Array(repeating: GridItem(.flexible(minimum: 50)), count: 3) // Adjust for layout
-        
-        LazyVGrid(columns: columns, alignment: .leading, spacing: 8) {
-            ForEach(categories.indices, id: \.self) { index in
-                HStack(spacing: 5) {
-                    Circle()
-                        .fill(categoryColors[index % categoryColors.count])
-                        .frame(width: 10, height: 10)
-                    Text(categories[index].name)
-                        .font(.subheadline)
-                        .foregroundColor(.seafoamGreen)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.5)
+                
+                // Dashed budget line (overlaid on the bars)
+                GeometryReader { geo in
+                    let maxHeight = geo.size.height
+                    let budgetLineY = maxHeight - CGFloat(500 / maxExpenditure * maxHeight)
+                    
+                    Path { path in
+                        path.move(to: CGPoint(x: 0, y: budgetLineY))
+                        path.addLine(to: CGPoint(x: geo.size.width, y: budgetLineY))
+                    }
+                    .stroke(style: StrokeStyle(lineWidth: 2, dash: [5]))
+                    .foregroundColor(.red)
                 }
             }
+            .frame(height: 250)
+            .padding(.leading)
+            
+            // Detailed view below the graph
+            if let selected = selectedMonth {
+                VStack {
+                    Text("Detailed Info for \(selected.month)")
+                        .font(.headline)
+                        .padding(.top, 20)
+                    Text("Expenditure: $\(selected.expenditure, specifier: "%.2f")")
+                    Text("Budget: $\(selected.budget, specifier: "%.2f")")
+                        .foregroundColor(.red)
+                    Spacer()
+                }
+                .padding()
+            } else {
+                Text("Select a month to see details")
+                    .padding()
+            }
         }
-        .padding(.horizontal)
+        .padding()
     }
 }
 
 struct BarView: View {
-    var value: Double
-    var budgetedAmount: Double
-    var color: Color
-
+    var month: MonthlyExpenditure
+    var isSelected: Bool
+    
     var body: some View {
-        GeometryReader { geometry in
-            let percentage = min(value / budgetedAmount, 1.0)
+        VStack {
+            Spacer()
+            
+            // Bar representing expenditure
             Rectangle()
-                .fill(color)
-                .frame(width: geometry.size.width * CGFloat(percentage), height: 30)
-                .cornerRadius(5)
+                .fill(isSelected ? Color.blue : Color.green)
+                .frame(width: 30, height: CGFloat(month.expenditure) / 800 * 200) // Normalize to max height
+            
+            // Month label below the bar
+            Text(month.month)
+                .font(.caption)
         }
-        .frame(height: 30)
-    }
-}
-
-struct HorizontalBarGraphView: View {
-    var category: String
-    var totalAmount: Double
-    @State var budgetedAmount: Double
-    var averageAmount: Double
-    @FocusState private var isBudgetedAmountFocused: Bool
-
-    var body: some View {
-        ZStack {
-            Color.clear
-                .contentShape(Rectangle())
-                .onTapGesture {
-                    isBudgetedAmountFocused = false
-                }
-
-            VStack(alignment: .leading) {
-                Text(category)
-                    .font(.headline.weight(.heavy))
-                    .foregroundColor(.seafoamGreen)
-                    .padding(.bottom, 5)
-
-                BarView(value: totalAmount, budgetedAmount: budgetedAmount, color: totalAmount > budgetedAmount ? Color.red.opacity(0.5) : Color.white.opacity(0.65))
-                    .overlay(Text(String(format: "$%.2f", totalAmount))
-                        .font(.headline.weight(.heavy))
-                        .foregroundColor(.seafoamGreen)
-                        .padding(5), alignment: .leading)
-
-                BarView(value: budgetedAmount, budgetedAmount: budgetedAmount, color: Color.seafoamGreen.opacity(0.3))
-                    .overlay(
-                        TextField("", value: $budgetedAmount, format: .number)
-                            .foregroundColor(.seafoamGreen)
-                            .font(.headline.weight(.heavy))
-                            .padding(5)
-                            .multilineTextAlignment(.leading)
-                            .keyboardType(.decimalPad)
-                            .focused($isBudgetedAmountFocused),
-                        alignment: .leading
-                    )
-
-                BarView(value: averageAmount, budgetedAmount: budgetedAmount, color: averageAmount > budgetedAmount ? Color.red.opacity(0.5) : Color.seafoamGreen.opacity(0.2))
-                    .overlay(Text(String(format: "$%.2f", averageAmount))
-                        .font(.headline.weight(.heavy))
-                        .foregroundColor(.seafoamGreen)
-                        .padding(5), alignment: .leading)
-            }
-            .padding(.vertical, 10)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding(.top)
     }
 }
