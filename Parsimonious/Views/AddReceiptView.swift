@@ -17,7 +17,7 @@ struct AddReceiptView: View {
     var completion: () -> ()
     
     var isComplete: Bool {
-        return amount != "" && description != "" && category != nil
+        return amount != "$0.00" && description != "" && category != nil
     }
     
     var body: some View {
@@ -34,6 +34,7 @@ struct AddReceiptView: View {
                         .font(.system(size: 20, weight: .semibold))
                         .padding()
                         .foregroundColor(isComplete ? .seafoamGreen : .white)
+                        .frame(maxWidth: .infinity)
                 }
                 .padding(.horizontal)
                 .disabled(!isComplete)

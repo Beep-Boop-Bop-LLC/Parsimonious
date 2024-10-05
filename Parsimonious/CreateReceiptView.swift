@@ -48,5 +48,20 @@ struct CreateReceiptView: View {
             focusDescription = true
             focusAmount = false
         }
+        .onTapGesture {
+            // Dismiss the keyboard when tapping anywhere
+            hideKeyboard()
+        }
+    }
+    
+    // Helper function to hide the keyboard
+    func hideKeyboard() {
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+    }
+}
+
+extension UIApplication {
+    func endEditing() {
+        sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
 }

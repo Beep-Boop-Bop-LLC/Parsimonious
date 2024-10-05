@@ -14,17 +14,62 @@ class ReceiptController: ObservableObject {
     
     var descriptionsToCategories: [String: String] = [:]
     
+    init() {
+        retrieveFromCache()
+    }
+    
+    func retrieveFromCache() {
+        let decoder = JSONDecoder()
+
+        if let categoriesData = UserDefaults.standard.object(forKey: StorageKeys.CATEGORIES) as? [Data] {
+            categories = Set()
+            for data in categoriesData {
+                if let category = try? decoder.decode(String.self, from: data) {
+                    categories.insert(category)
+                }
+            }
+        }
+        
+        if let receiptData = UserDefaults.standard.object(forKey: StorageKeys.RECEIPTS) as? [Data] {
+            for data in receiptData {
+                if let receipt = try? decoder.decode(Receipt.self, from: data) {
+                    receipts.append(receipt)
+                    descriptionsToCategories[receipt.description.lowercased()] = receipt.category
+                }
+            }
+        }
+    }
+    
+    func storeInCache() {
+        let categoriesArray: [String] = Array(categories)
+        let encoder = JSONEncoder()
+
+        let categoriesData: [Data] = categoriesArray.map { category in
+            return (try? encoder.encode(category)) ?? Data()
+        }
+
+        let receiptData: [Data] = receipts.map { receipt in
+            return (try? encoder.encode(receipt)) ?? Data()
+        }
+
+        UserDefaults.standard.set(categoriesData, forKey: StorageKeys.CATEGORIES)
+        UserDefaults.standard.set(receiptData, forKey: StorageKeys.RECEIPTS)
+    }
+    
     func addCategory(_ category: String) {
         categories.insert(category)
+        storeInCache()
     }
     
     func removeCategory(_ category: String) {
         categories.remove(category)
+        storeInCache()
     }
     
     func addReceipt(amount: Double, description: String, note: String?, category: String) {
         receipts.append(Receipt(date: ReceiptDate(), description: description, note: note, category: category, amount: amount))
         descriptionsToCategories[description.lowercased()] = category
+        storeInCache()
     }
     
     func retrieveCategory(_ fromDescription: String) -> String? {
@@ -36,7 +81,7 @@ class ReceiptController: ObservableObject {
     
 }
 
-struct Receipt: Identifiable, Hashable {
+struct Receipt: Identifiable, Hashable, Codable {
     var id = UUID()
     var date: ReceiptDate
     var description: String
@@ -176,4 +221,9 @@ struct ReceiptDate: Hashable, Comparable, Codable, Equatable {
                 return "January"
         }
     }
+}
+
+struct StorageKeys {
+    static var CATEGORIES = "Categories"
+    static var RECEIPTS = "Receipts"
 }
