@@ -19,27 +19,35 @@ struct ReceiptListView: View {
         
     var body: some View {
         ZStack {
-            Color.paleGreen.ignoresSafeArea()
             List {
                 ForEach(receipts, id: \.self) { receipt in
-                    HStack {
-                        DateView(receipt.date).frame(maxHeight: 50)
+                    ZStack {
+                        // Extend the white background to cover the entire cell
+                        Color.white
                         
-                        VStack {
-                            Text(receipt.description)
-                                .font(.body)
-                                .fontWeight(.bold)
+                        HStack {
+                            DateView(receipt.date)
+                                .frame(maxHeight: 50)
                             
-                            Text(receipt.category)
-                                .font(.caption2)
-                                .foregroundStyle(.gray)
+                            VStack {
+                                Text(receipt.description)
+                                    .font(.body)
+                                    .fontWeight(.heavy)
+                                    .foregroundStyle(Color.seafoamGreen)
+                                Text(receipt.category)
+                                    .font(.caption2)
+                                    .fontWeight(.heavy)
+                                    .foregroundStyle(.gray)
+                            }
+                            Spacer()
+                            Text(String(format: "$%.2f", receipt.amount))
+                                .font(.largeTitle)
+                                .fontWeight(.heavy)
+                                .foregroundStyle(Color.seafoamGreen)
                         }
-                        Spacer()
-                        Text(String(format: "$%.2f", receipt.amount))
-                            .font(.body)
-                            .padding(.top, 10)
-                            .foregroundStyle(Color.seafoamGreen)
+                        .padding() // Optional padding for content inside the cell
                     }
+                    .listRowInsets(EdgeInsets()) // Remove default insets to extend the background
                 }
             }
             .scrollContentBackground(.hidden)

@@ -21,12 +21,17 @@ struct ContentView: View {
             
             ReceiptSummaryView()
                 .tabItem {
-                    Label("Summary", systemImage: "chart.pie")
+                    Label("Reciepts", systemImage: "list.number")
                 }
                 .tag(1)
+            GraphsView()
+                .tabItem {
+                    Label("Summary", systemImage: "chart.pie")
+                }
+                .tag(2)
         }
+        .accentColor(.seafoamGreen)
     }
-    
 }
 
 struct CustomTextFieldModifier: ViewModifier {
@@ -34,7 +39,7 @@ struct CustomTextFieldModifier: ViewModifier {
         content
             .multilineTextAlignment(.center)
             .foregroundColor(.seafoamGreen)
-            .font(.system(size: 25, weight: .semibold))
+            .font(.system(size: 45, weight: .heavy))
             .frame(maxWidth: .infinity, alignment: .center)
             .background(Color.clear)
             .autocorrectionDisabled(true)

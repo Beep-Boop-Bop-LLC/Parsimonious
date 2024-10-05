@@ -44,14 +44,14 @@ struct DateView: View {
             
             VStack(spacing: 0) {
                 Text(month + year)
-                    .font(.system(size: sideLength * 0.2, weight: .bold, design: .default))
-                    .foregroundColor(.black)
+                    .font(.system(size: sideLength * 0.2, weight: .heavy, design: .default))
+                    .foregroundColor(.seafoamGreen)
                     .frame(width: sideLength, height: sideLength * 0.3)
-                    .background(Color.gray)
+                    .background(Color.white.opacity(0.4))
                 
                 Text(day)
-                    .font(.system(size: sideLength * 0.4, weight: .bold, design: .default))
-                    .foregroundColor(.black)
+                    .font(.system(size: sideLength * 0.4, weight: .heavy, design: .default))
+                    .foregroundColor(.seafoamGreen)
                     .frame(width: sideLength, height: sideLength * 0.7)
                     .background(Color.white)
             }
