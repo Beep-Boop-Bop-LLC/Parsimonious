@@ -1,62 +1,109 @@
+//
+//  BarGraphView.swift
+//  Parsimonious
+//
+//  Created by Zach Venanzi on 10/11/24.
+//
 import SwiftUI
 
 struct BarGraphView: View {
+    
     @ObservedObject var receiptController: ReceiptController
+    var selectedCategories: Set<String> // Property for selected categories
+    let calendar = Calendar.current
+    let today = Date()
+
+    // Get the last seven days' dates (reversed so the most recent day is on the right)
+    var lastSevenDays: [Date] {
+        (0..<7).compactMap { calendar.date(byAdding: .day, value: -$0, to: today) }.reversed()
+    }
+
+    // Sum of receipts for each of the last seven days filtered by selected categories
+    var dailySums: [Double] {
+        lastSevenDays.map { day in
+            let receiptsForDay = receiptController.receipts.filter { receipt in
+                calendar.isDate(receipt.date.toDate(), inSameDayAs: day) &&
+                (selectedCategories.isEmpty || selectedCategories.contains(receipt.category)) // Filter by selected categories
+            }
+            return receiptsForDay.reduce(0) { $0 + $1.amount }
+        }
+    }
+
+    // Get the date range for display under the graph
+    var dateRangeLabel: String {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateStyle = .medium
+        if let startDate = lastSevenDays.last, let endDate = lastSevenDays.first {
+            return "\(dateFormatter.string(from: startDate)) - \(dateFormatter.string(from: endDate))"
+        }
+        return ""
+    }
 
     var body: some View {
-        let categoryExpenditures = aggregateExpenditures()
-        let maxExpenditure = categoryExpenditures.map { $0.totalExpenditure }.max() ?? 1
-        
         VStack {
-            Text("Expenditure by Category")
-                .font(.title)
-                .padding()
+            HStack(alignment: .center) {
+                // Y-axis labels for easier analysis
+                VStack(spacing: 0) {
+                    ForEach((0...5).reversed(), id: \.self) { step in
+                        Text("\(step * 200)")
+                            .font(.footnote)
+                            .foregroundColor(.white)
+                            .frame(height: 40) // Adjusted height for scaling
+                    }
+                }
+                
+                // The vertical bar graph layout
+                GeometryReader { geometry in
+                    HStack(alignment: .bottom, spacing: 10) {
+                        ForEach(0..<7, id: \.self) { index in
+                            VStack {
+                                // Scaled bar with dynamic height based on screen size
+                                Rectangle()
+                                    .fill(Color.white)
+                                    .frame(width: 20, height: barHeight(for: dailySums[index], maxHeight: geometry.size.height))
 
-            HStack(spacing: 16) { // Added spacing for better visualization
-                ForEach(categoryExpenditures) { category in
-                    BarView(category: category, maxExpenditure: maxExpenditure)
+                                // Day label under the bar
+                                Text(dayLabel(for: lastSevenDays[index]))
+                                    .font(.caption)
+                                    .foregroundColor(.white)
+                                    .frame(height: 30)
+                            }
+                        }
+                    }
                 }
             }
             .padding()
+
+            // Label for the date range
+            Text(dateRangeLabel)
+                .font(.caption)
+                .foregroundColor(.white)
+                .padding(.top, 8)
+        }
+        .frame(height: 300) // Adjust graph height as needed
+        .onChange(of: selectedCategories) { newValue in
+            print("BarGraphView - Updated Selected Categories: \(newValue)") // Debugging print statement
         }
     }
 
-    // Aggregate total expenditures by category
-    func aggregateExpenditures() -> [CategoryExpenditure] {
-        var expenditures: [String: Double] = [:]
+    // Generate day labels for the last seven days (e.g., Mon, Tue)
+    func dayLabel(for date: Date) -> String {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "E" // Day of the week (e.g., Mon)
+        return dateFormatter.string(from: date)
+    }
 
-        // Sum up the amounts for each category
-        for receipt in receiptController.receipts {
-            expenditures[receipt.category, default: 0] += receipt.amount
-        }
-
-        return expenditures.map { CategoryExpenditure(category: $0.key, totalExpenditure: $0.value) }
+    // Dynamically calculate bar height for visual clarity and scaling
+    func barHeight(for amount: Double, maxHeight: CGFloat) -> CGFloat {
+        let maxAmount: Double = 1000 // Set the expected max value for scaling
+        return CGFloat(amount / maxAmount) * maxHeight
     }
 }
 
-struct CategoryExpenditure: Identifiable {
-    let id = UUID()
-    let category: String
-    let totalExpenditure: Double
-}
-
-struct BarView: View {
-    var category: CategoryExpenditure
-    var maxExpenditure: Double
-
-    var body: some View {
-        // Calculate the bar height separately for clarity
-        let normalizedHeight: CGFloat = CGFloat(category.totalExpenditure / maxExpenditure) * 150
-        
-        return VStack {
-            RoundedRectangle(cornerRadius: 5)
-                .fill(Color.green.opacity(0.7))
-                .frame(width: 30, height: normalizedHeight) // Separate height calculation
-
-            Text(category.category)
-                .font(.footnote)
-                .foregroundColor(.black)
-                .padding(.top, 4)
-        }
+// Helper function to convert ReceiptDate to Date
+extension ReceiptDate {
+    func toDate() -> Date {
+        let components = DateComponents(year: year, month: month, day: day)
+        return Calendar.current.date(from: components) ?? Date()
     }
 }

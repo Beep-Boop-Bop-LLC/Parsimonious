@@ -4,19 +4,17 @@
 //
 //  Created by Nick Venanzi on 10/2/24.
 //
-
 import SwiftUI
 
 struct ReceiptListView: View {
     
     @EnvironmentObject var controller: ReceiptController
-    
     @Binding var categories: Set<String>
     
     var receipts: [Receipt] {
-        controller.receipts.filter { categories.contains($0.category) }
+        controller.receipts.filter { categories.contains($0.category) }.reversed()
     }
-        
+
     var body: some View {
         ZStack {
             List {
@@ -43,19 +41,27 @@ struct ReceiptListView: View {
                                 .fontWeight(.heavy)
                                 .foregroundStyle(Color.lightBeige)
                         }
-
-                        .listRowBackground(Color.clear) // Set each row's background to white
-
                         .padding() // Optional padding for content inside the cell
                     }
                     .frame(maxHeight: 100)
-                    //.background(Color.darkGreen.ignoresSafeArea())
                     .listRowInsets(EdgeInsets()) // Remove default insets to extend the background
                 }
+                .onDelete(perform: deleteReceipt) // Enable swipe-to-delete
+                .listRowBackground(Color.clear) // Set each row's background to white
             }
             .listRowSpacing(3)
             .listStyle(PlainListStyle()) // Keep the inset list style
         }
     }
+    
+    // Function to delete receipts
+    func deleteReceipt(at offsets: IndexSet) {
+        let toDelete = offsets.map { receipts[$0] }
+        toDelete.forEach { receipt in
+            if let index = controller.receipts.firstIndex(of: receipt) {
+                controller.receipts.remove(at: index)
+            }
+        }
+        controller.storeInCache() // Update the cache after deleting
+    }
 }
-

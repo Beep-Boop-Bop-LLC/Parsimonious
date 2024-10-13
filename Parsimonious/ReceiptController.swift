@@ -95,6 +95,14 @@ struct ReceiptDate: Hashable, Comparable, Codable, Equatable {
     var year: Int
     var month: Int
     var day: Int
+    //this is some shit chatGPT asked nicely to do
+    func toDate() -> Date? {
+            var components = DateComponents()
+            components.year = self.year
+            components.month = self.month
+            components.day = self.day
+            return Calendar.current.date(from: components)
+        }
     
     /*
      Default initializer creates an AnswerDate object associated with today's date

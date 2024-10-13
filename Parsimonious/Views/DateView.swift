@@ -45,7 +45,7 @@ struct DateView: View {
             VStack(spacing: 0) {
                 Text(month + year)
                     .font(.system(size: sideLength * 0.2, weight: .heavy, design: .default))
-                    .foregroundColor(.lightGreen)
+                    .foregroundColor(.lightBeige)
                     .frame(width: sideLength, height: sideLength * 0.3)
                     .background(Color.white.opacity(0.4))
                 

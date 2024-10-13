@@ -7,52 +7,58 @@
 
 import SwiftUI
 
-import SwiftUI
-
-import SwiftUI
-
-import SwiftUI
-
 struct GraphView: View {
     
     @EnvironmentObject var controller: ReceiptController
-    @State var selectedCategories: Set<String> = Set()
+    @State private var selectedCategory: Set<String> = []
 
+    var categories: [String] {
+        let allCategories = ["All"]
+        return allCategories + controller.categories.sorted()
+    }
 
     var body: some View {
-        ZStack{
+        ZStack {
             Image("Parsimonious")
                 .resizable()
                 .scaledToFill()
-                .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height) // Full screen size
-                .position(x: UIScreen.main.bounds.width / 2, y: UIScreen.main.bounds.height / 2) // Center the image
+                .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
+                .position(x: UIScreen.main.bounds.width / 2, y: UIScreen.main.bounds.height / 2)
                 .opacity(0.04)
-                .ignoresSafeArea() // Extend beyond safe areas
+                .ignoresSafeArea()
             
             LinearGradient(
                 gradient: Gradient(colors: [Color.midGreen.opacity(0.2), Color.midGreen.opacity(0.8)]),
                 startPoint: .top,
                 endPoint: .bottom
             )
-            
-            .ignoresSafeArea(edges: .all) // Ensures the gradient extends beyond the safe area
+            .ignoresSafeArea(edges: .all)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            VStack{
+
+            VStack {
                 ParsimoniousHeaderView()
                 
-                List{
-                    BarGraphView(receiptController: ReceiptController())
-                        .listRowBackground(Color.clear) // Set each row's background to white
-                    HeatMapView(receiptController: ReceiptController())
-                        .listRowBackground(Color.clear) // Set each row's background to white
+                SummaryCategoryView(categories: $selectedCategory) // Updated binding
+
+                List {
+                    CircleGraphView(receiptController: controller, selectedCategories: selectedCategory) // Pass selected categories
+                    .frame(height: 175)
+                    .listRowBackground(Color.clear)
+                    BarGraphView(receiptController: controller, selectedCategories: selectedCategory)
+                        .listRowBackground(Color.clear)
+                    HeatMapView(receiptController: controller)
+                        .listRowBackground(Color.clear)
+                        .padding()
                 }
-                .listStyle(PlainListStyle()) // Optional: Change the list style if needed
-                .scrollContentBackground(.hidden) // Hide the default scroll background (iOS 16+)
+                .listStyle(PlainListStyle())
+                .scrollContentBackground(.hidden)
                 .frame(maxWidth: .infinity)
                 .padding(.bottom, 20)
             }
         }
-
         .background(Color.lightGreen.ignoresSafeArea())
+        .onChange(of: selectedCategory) { newValue in
+            print("Selected Categories: \(newValue)") // Debugging print statement
+        }
     }
 }
