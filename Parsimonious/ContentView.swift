@@ -24,13 +24,13 @@ struct ContentView: View {
                     Label("Reciepts", systemImage: "list.number")
                 }
                 .tag(1)
-            BarGraphView()
+            GraphView()
                 .tabItem {
                     Label("Summary", systemImage: "chart.pie")
                 }
                 .tag(2)
         }
-        .accentColor(.seafoamGreen)
+        .accentColor(.darkGreen)
     }
 }
 
@@ -38,7 +38,8 @@ struct CustomTextFieldModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .multilineTextAlignment(.center)
-            .foregroundColor(.seafoamGreen)
+            .foregroundColor(.darkGreen)
+            .shadow(color: .black.opacity(0.2), radius: 5, x: 2, y: 2) // Adjust shadow parameters here
             .font(.system(size: 45, weight: .heavy))
             .frame(maxWidth: .infinity, alignment: .center)
             .background(Color.clear)

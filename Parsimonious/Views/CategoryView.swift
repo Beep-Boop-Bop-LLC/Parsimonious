@@ -52,9 +52,10 @@ struct CategoryView: View {
                             } else {
                                 Text(category)
                                     .font(.system(size: 20, weight: .semibold))
-                                    .foregroundColor(selection == category ? .seafoamGreen : .gray)
+                                    .foregroundColor(selection == category ? .darkGreen : .lightBeige)
+                                    .shadow(color: .black.opacity(0.2), radius: 5, x: 2, y: 2) // Adjust shadow parameters here
                                     .padding()
-                                    .background(selection == category ? Color.white : Color.clear)
+                                    .background(selection == category ? Color.lightBeige : Color.clear)
                                     .cornerRadius(8)
                             }
                         }
@@ -76,7 +77,9 @@ struct CategoryView: View {
                     }
                 }
             }
+            .frame(maxWidth: .infinity)
             .frame(height: 60)
+
             .onAppear {
                 newCategoryFocus = false
             }

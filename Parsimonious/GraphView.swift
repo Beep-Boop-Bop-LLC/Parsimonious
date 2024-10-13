@@ -1,17 +1,24 @@
 //
-//  ReceiptSummaryView.swift
+//  GraphView.swift
 //  Parsimonious
 //
-//  Created by Nick Venanzi on 10/2/24.
+//  Created by Zach Venanzi on 10/11/24.
 //
 
 import SwiftUI
 
-struct ReceiptSummaryView: View {
+import SwiftUI
+
+import SwiftUI
+
+import SwiftUI
+
+struct GraphView: View {
     
     @EnvironmentObject var controller: ReceiptController
     @State var selectedCategories: Set<String> = Set()
-    
+
+
     var body: some View {
         ZStack{
             Image("Parsimonious")
@@ -29,25 +36,23 @@ struct ReceiptSummaryView: View {
             )
             
             .ignoresSafeArea(edges: .all) // Ensures the gradient extends beyond the safe area
-            .frame(maxWidth: .infinity, maxHeight: .infinity) //
-            
-            VStack {
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            VStack{
                 ParsimoniousHeaderView()
                 
-                SummaryCategoryView(categories: $selectedCategories)
-                
-                ReceiptListView(categories: $selectedCategories)
-
+                List{
+                    BarGraphView(receiptController: ReceiptController())
+                        .listRowBackground(Color.clear) // Set each row's background to white
+                    HeatMapView(receiptController: ReceiptController())
+                        .listRowBackground(Color.clear) // Set each row's background to white
+                }
+                .listStyle(PlainListStyle()) // Optional: Change the list style if needed
+                .scrollContentBackground(.hidden) // Hide the default scroll background (iOS 16+)
+                .frame(maxWidth: .infinity)
+                .padding(.bottom, 20)
             }
-            .padding(.bottom, 20) // Add some padding at the bottom for scrolling
-
         }
+
         .background(Color.lightGreen.ignoresSafeArea())
-        .onAppear {
-            selectedCategories.insert("All")
-            for category in controller.categories {
-                selectedCategories.insert(category)
-            }
-        }
     }
 }

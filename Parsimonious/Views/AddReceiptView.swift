@@ -33,14 +33,15 @@ struct AddReceiptView: View {
                     Text("Add")
                         .font(.system(size: 20, weight: .semibold))
                         .padding()
-                        .foregroundColor(isComplete ? .seafoamGreen : .white)
+                        .foregroundColor(isComplete ? .darkGreen : .lightBeige)
                         .frame(maxWidth: .infinity)
+                        .shadow(color: .black.opacity(0.2), radius: 5, x: 2, y: 2) // Adjust shadow parameters here
                 }
                 .padding(.horizontal)
                 .disabled(!isComplete)
             }
             .frame(width: geometry.size.width)
-            .background(isComplete ? Color.white : Color.gray.opacity(0.5))
+            .background(isComplete ? Color.lightBeige.opacity(0.4) : Color.midGreen.opacity(0.4))
         }
         .frame(height: 50)
         .cornerRadius(8)

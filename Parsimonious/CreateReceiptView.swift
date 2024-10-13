@@ -21,14 +21,22 @@ struct CreateReceiptView: View {
     
     var body: some View {
         ZStack{
+            Image("Parsimonious")
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height) // Full screen size
+                        .position(x: UIScreen.main.bounds.width / 2, y: UIScreen.main.bounds.height / 2) // Center the image
+                        .opacity(0.04)
+                        .ignoresSafeArea() // Extend beyond safe areas
+                    
             LinearGradient(
-                gradient: Gradient(colors: [Color.white.opacity(0.2), Color.white.opacity(0.8)]),
+                gradient: Gradient(colors: [Color.midGreen.opacity(0.2), Color.midGreen.opacity(0.8)]),
                 startPoint: .top,
                 endPoint: .bottom
             )
+            
             .ignoresSafeArea(edges: .all) // Ensures the gradient extends beyond the safe area
             .frame(maxWidth: .infinity, maxHeight: .infinity) // Fills the entire superview
-
             VStack {
                 ParsimoniousHeaderView()
                 
@@ -53,7 +61,7 @@ struct CreateReceiptView: View {
                 })
             }
         }
-        .background(Color.paleGreen.ignoresSafeArea())
+        .background(Color.lightGreen.ignoresSafeArea())
         .onAppear {
             focusDescription = true
             focusAmount = false

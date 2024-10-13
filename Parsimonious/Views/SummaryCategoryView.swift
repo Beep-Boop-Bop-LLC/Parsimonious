@@ -56,9 +56,9 @@ struct SummaryCategoryButton: View {
         }) {
             Text(category)
                 .font(.system(size: 20, weight: .semibold))
-                .foregroundColor(categories.contains(category) ? .seafoamGreen : .gray)
+                .foregroundColor(categories.contains(category) ? .darkGreen : .lightBeige)
                 .padding()
-                .background(categories.contains(category) ? Color.white : Color.clear)
+                .background(categories.contains(category) ? Color.lightBeige.opacity(0.5) : Color.clear)
                 .cornerRadius(8)
         }
     }

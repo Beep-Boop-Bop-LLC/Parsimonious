@@ -16,6 +16,7 @@ struct AmountView: View {
         TextField("Amount", text: $amount)
             .customTextField()
             .font(.system(size: 70, weight: .heavy))
+            .shadow(color: .black.opacity(0.1), radius: 5, x: 2, y: 2) // Adjust shadow parameters here
             .keyboardType(.decimalPad)
             .onChange(of: amount) { _, newValue in
                 let filtered = newValue.filter { "0123456789".contains($0) }

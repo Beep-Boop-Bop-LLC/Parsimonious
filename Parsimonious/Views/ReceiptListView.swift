@@ -22,35 +22,40 @@ struct ReceiptListView: View {
             List {
                 ForEach(receipts, id: \.self) { receipt in
                     ZStack {
-                        // Extend the white background to cover the entire cell
-                        Color.white
-                        
                         HStack {
                             DateView(receipt.date)
                                 .frame(maxHeight: 50)
                             
-                            VStack {
+                            VStack(alignment: .leading) {
                                 Text(receipt.description)
                                     .font(.body)
                                     .fontWeight(.heavy)
-                                    .foregroundStyle(Color.seafoamGreen)
+                                    .foregroundStyle(Color.lightBeige)
                                 Text(receipt.category)
                                     .font(.caption2)
                                     .fontWeight(.heavy)
-                                    .foregroundStyle(.gray)
+                                    .multilineTextAlignment(.leading)
+                                    .foregroundStyle(Color.lightBeige.opacity(0.7))
                             }
                             Spacer()
                             Text(String(format: "$%.2f", receipt.amount))
                                 .font(.largeTitle)
                                 .fontWeight(.heavy)
-                                .foregroundStyle(Color.seafoamGreen)
+                                .foregroundStyle(Color.lightBeige)
                         }
+
+                        .listRowBackground(Color.clear) // Set each row's background to white
+
                         .padding() // Optional padding for content inside the cell
                     }
+                    .frame(maxHeight: 100)
+                    //.background(Color.darkGreen.ignoresSafeArea())
                     .listRowInsets(EdgeInsets()) // Remove default insets to extend the background
                 }
             }
-            .scrollContentBackground(.hidden)
+            .listRowSpacing(3)
+            .listStyle(PlainListStyle()) // Keep the inset list style
         }
     }
 }
+
