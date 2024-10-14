@@ -13,39 +13,54 @@ struct HeatMapView: View {
     let daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 
     var body: some View {
-        ScrollView(.horizontal) {
-            HStack(alignment: .top) {
-                ForEach(monthsWithReceipts(), id: \.self) { month in
-                    VStack {
-                        Text(monthName(for: month))
-                            .font(.headline)
-                            .padding(.top)
+        VStack {
+            ScrollView(.horizontal) {
+                HStack(alignment: .top) {
+                    ForEach(monthsWithReceipts(), id: \.self) { month in
+                        VStack {
+                            Text(monthName(for: month))
+                                .font(.headline)
+                                .foregroundColor(.lightBeige)
+                            Text("\(currentMonthReceiptCount()) Receipts")
+                                .foregroundColor(.lightBeige.opacity(0.7))
+                                .font(.subheadline)
 
-                        // Day labels
-                        dayLabels()
+                            // Day labels
+                            dayLabels()
 
-                        // Create a grid for each week of the month
-                        let (daysInMonth, firstWeekday) = daysInMonthInfo(for: month)
-                        let totalRows = (daysInMonth + firstWeekday - 1) / 7 + 1
+                            // Create a grid for each week of the month
+                            let (daysInMonth, firstWeekday) = daysInMonthInfo(for: month)
+                            let totalRows = (daysInMonth + firstWeekday - 1) / 7 + 1
 
-                        ForEach(0..<totalRows, id: \.self) { week in
-                            weekRow(for: week, daysInMonth: daysInMonth, firstWeekday: firstWeekday)
+                            ForEach(0..<totalRows, id: \.self) { week in
+                                weekRow(for: week, daysInMonth: daysInMonth, firstWeekday: firstWeekday)
+                            }
                         }
+                        .padding(.horizontal, 4)
                     }
-                    .padding(.horizontal, 4)
                 }
+                .padding()
             }
-            .padding()
+            .padding(1)
         }
     }
 
-    // MARK: - Helper Functions
+    // Add a new function to count the number of receipts for the current month
+    private func currentMonthReceiptCount() -> Int {
+        let currentMonth = calendar.component(.month, from: Date())
+        let currentYear = calendar.component(.year, from: Date())
+
+        return receiptController.receipts.filter {
+            $0.date.month == currentMonth && $0.date.year == currentYear
+        }.count
+    }
 
     // Generate day labels
     private func dayLabels() -> some View {
         HStack(spacing: 4) {
             ForEach(daysOfWeek, id: \.self) { day in
                 Text(day)
+                    .foregroundColor(.lightBeige)
                     .font(.footnote)
                     .frame(width: 35, height: 20)
             }
@@ -81,7 +96,6 @@ struct HeatMapView: View {
             .fill(color(for: count))
             .frame(width: 35, height: 35)
             .cornerRadius(8) // Rounded corners
-            .border(Color.gray)
             .overlay(
                 Text(count > 0 ? "\(count)" : "")
                     .foregroundColor(.white)
@@ -92,7 +106,7 @@ struct HeatMapView: View {
     // Create a square for empty days
     private func emptyDaySquare() -> some View {
         Rectangle()
-            .fill(Color.gray.opacity(0.3)) // Fill with gray
+            .fill(Color.clear.opacity(0.3)) // Fill with gray
             .frame(width: 35, height: 35)
             .cornerRadius(8) // Rounded corners
     }
@@ -116,10 +130,18 @@ struct HeatMapView: View {
     }
 
     // Get the weekday (1 = Sunday) of the first day of the month
+    // Adjust this function to make sure Sunday is the first day of the week
     func firstDayOfMonthWeekday(for date: Date) -> Int {
+        var calendar = Calendar.current
+        calendar.firstWeekday = 1 // Set Sunday as the first day of the week
+
         let firstDayOfMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: date))!
-        return calendar.component(.weekday, from: firstDayOfMonth)
+        let weekday = calendar.component(.weekday, from: firstDayOfMonth)
+        
+        // Adjust to make it zero-based (0 = Sunday, 1 = Monday, etc.)
+        return (weekday - calendar.firstWeekday + 7) % 7
     }
+
 
     // Get a specific date for a day index within a month
     func getDateForDay(dayIndex: Int, month: Date) -> Date {
@@ -143,7 +165,7 @@ struct HeatMapView: View {
     func color(for count: Int) -> Color {
         switch count {
         case 0:
-            return Color.gray.opacity(0.0)
+            return Color.lightBeige.opacity(0.1)
         case 1:
             return Color.darkGreen.opacity(0.1)
         case 2:

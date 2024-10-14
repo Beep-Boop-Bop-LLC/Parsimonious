@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UIKit // Import UIKit for haptic feedback
 
 struct CreateReceiptView: View {
     @EnvironmentObject var controller: ReceiptController
@@ -20,23 +21,23 @@ struct CreateReceiptView: View {
     var completion: () -> ()
     
     var body: some View {
-        ZStack{
+        ZStack {
             Image("Parsimonious")
-                        .resizable()
-                        .scaledToFill()
-                        .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height) // Full screen size
-                        .position(x: UIScreen.main.bounds.width / 2, y: UIScreen.main.bounds.height / 2) // Center the image
-                        .opacity(0.04)
-                        .ignoresSafeArea() // Extend beyond safe areas
-                    
+                .resizable()
+                .scaledToFill()
+                .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
+                .position(x: UIScreen.main.bounds.width / 2, y: UIScreen.main.bounds.height / 2)
+                .opacity(0.04)
+                .ignoresSafeArea()
+            
             LinearGradient(
                 gradient: Gradient(colors: [Color.midGreen.opacity(0.2), Color.midGreen.opacity(0.8)]),
                 startPoint: .top,
                 endPoint: .bottom
             )
+            .ignoresSafeArea(edges: .all)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
             
-            .ignoresSafeArea(edges: .all) // Ensures the gradient extends beyond the safe area
-            .frame(maxWidth: .infinity, maxHeight: .infinity) // Fills the entire superview
             VStack {
                 ParsimoniousHeaderView()
                 
@@ -51,6 +52,10 @@ struct CreateReceiptView: View {
                 Spacer()
                 
                 AddReceiptView(amount: $inputAmount, description: $inputDescription, note: $inputNote, category: $selectedCategory, completion: {
+                    // Trigger success haptic feedback
+                    let notificationGenerator = UINotificationFeedbackGenerator()
+                    notificationGenerator.notificationOccurred(.success)
+
                     completion()
                     inputAmount = "$0.00"
                     inputDescription = ""
@@ -67,12 +72,10 @@ struct CreateReceiptView: View {
             focusAmount = false
         }
         .onTapGesture {
-            // Dismiss the keyboard when tapping anywhere
             hideKeyboard()
         }
     }
     
-    // Helper function to hide the keyboard
     func hideKeyboard() {
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }

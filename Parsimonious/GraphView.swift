@@ -42,19 +42,22 @@ struct GraphView: View {
 
                 List {
                     CircleGraphView(receiptController: controller, selectedCategories: selectedCategory) // Pass selected categories
-                    .frame(height: 175)
+                    .frame(height: 215)
                     .listRowBackground(Color.clear)
-                    BarGraphView(receiptController: controller, selectedCategories: selectedCategory)
-                        .listRowBackground(Color.clear)
+//                    BarGraphView(receiptController: controller, selectedCategories: selectedCategory)
+//                        .listRowBackground(Color.clear)
                     HeatMapView(receiptController: controller)
                         .listRowBackground(Color.clear)
-                        .padding()
+                        .padding(.horizontal)
+                        .padding(.top, -20)
                 }
                 .listStyle(PlainListStyle())
+                .listRowSeparator(.hidden)
                 .scrollContentBackground(.hidden)
                 .frame(maxWidth: .infinity)
-                .padding(.bottom, 20)
             }
+            .padding(.bottom, 20)
+
         }
         .background(Color.lightGreen.ignoresSafeArea())
         .onChange(of: selectedCategory) { newValue in

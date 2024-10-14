@@ -108,12 +108,13 @@ struct ReceiptDate: Hashable, Comparable, Codable, Equatable {
      Default initializer creates an AnswerDate object associated with today's date
      */
     init() {
-        let pieces = Date().description.split(separator: " ")[0].split(separator: "-")
-        self.year = Int(String(pieces[0])) ?? 0
-        self.month = Int(String(pieces[1])) ?? 0
-        self.day = Int(String(pieces[2])) ?? 0
+        let currentDate = Date()
+        let calendar = Calendar.current
+        self.year = calendar.component(.year, from: currentDate)
+        self.month = calendar.component(.month, from: currentDate)
+        self.day = calendar.component(.day, from: currentDate)
     }
-    
+
     /*
      initializer creates an AnswerDate object associated with year/month/day
      */

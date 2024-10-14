@@ -40,7 +40,7 @@ struct BarGraphView: View {
     }
 
     var body: some View {
-        VStack {
+        ZStack {
             HStack(alignment: .center) {
                 // Y-axis labels for easier analysis
                 VStack(spacing: 0) {
@@ -51,52 +51,54 @@ struct BarGraphView: View {
                             .frame(height: 40) // Adjusted height for scaling
                     }
                 }
-                
                 // The vertical bar graph layout
                 GeometryReader { geometry in
-                    HStack(alignment: .bottom, spacing: 10) {
-                        ForEach(0..<7, id: \.self) { index in
-                            VStack {
-                                // Scaled bar with dynamic height based on screen size
-                                Rectangle()
-                                    .fill(Color.white)
-                                    .frame(width: 20, height: barHeight(for: dailySums[index], maxHeight: geometry.size.height))
-
-                                // Day label under the bar
-                                Text(dayLabel(for: lastSevenDays[index]))
-                                    .font(.caption)
-                                    .foregroundColor(.white)
-                                    .frame(height: 30)
+                        HStack(alignment: .bottom, spacing: 10) {
+                            ForEach(0..<7, id: \.self) { index in
+                                VStack {
+                                    // Overlay background bars to represent max height
+                                    ZStack(alignment: .bottom) {
+                                        // Clear or semi-transparent max height bar
+                                        Rectangle()
+                                            .fill(Color.white.opacity(0.2)) // Semi-transparent background
+                                            .frame(width: 20, height: geometry.size.height * 0.7) // Max height set to 70% of available space
+                                        
+                                        // Scaled bar with dynamic height based on screen size
+                                        Rectangle()
+                                            .fill(Color.white)
+                                            .frame(width: 20, height: barHeight(for: dailySums[index], maxHeight: geometry.size.height * 0.7)) // Actual bar height
+                                            .animation(.easeInOut) // Optional animation for smoother transitions
+                                    }
+                                    
+                                    // Day label under the bar
+                                    Text(dayLabel(for: lastSevenDays[index]))
+                                        .font(.caption)
+                                        .foregroundColor(.white)
+                                        .frame(height: 30)
+                                }
                             }
-                        }
                     }
                 }
             }
-            .padding()
-
-            // Label for the date range
-            Text(dateRangeLabel)
-                .font(.caption)
-                .foregroundColor(.white)
-                .padding(.top, 8)
+            .frame(height: 300) // Adjust as needed
         }
-        .frame(height: 300) // Adjust graph height as needed
         .onChange(of: selectedCategories) { newValue in
             print("BarGraphView - Updated Selected Categories: \(newValue)") // Debugging print statement
         }
     }
+
+    // Helper function to calculate the height of the actual bar
+    func barHeight(for amount: Double, maxHeight: CGFloat) -> CGFloat {
+        let maxAmount: Double = 1000 // Set the expected max value for scaling
+        return CGFloat(amount / maxAmount) * maxHeight
+    }
+
 
     // Generate day labels for the last seven days (e.g., Mon, Tue)
     func dayLabel(for date: Date) -> String {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "E" // Day of the week (e.g., Mon)
         return dateFormatter.string(from: date)
-    }
-
-    // Dynamically calculate bar height for visual clarity and scaling
-    func barHeight(for amount: Double, maxHeight: CGFloat) -> CGFloat {
-        let maxAmount: Double = 1000 // Set the expected max value for scaling
-        return CGFloat(amount / maxAmount) * maxHeight
     }
 }
 
