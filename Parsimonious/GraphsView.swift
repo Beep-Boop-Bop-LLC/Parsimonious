@@ -9,6 +9,7 @@ import SwiftUI
 
 struct GraphsView: View {
     
+    @ObservedObject var receiptController = ReceiptController()
     @EnvironmentObject var controller: ReceiptController
     @State private var selectedCategory: Set<String> = []
 
@@ -38,18 +39,33 @@ struct GraphsView: View {
             VStack {
                 ParsimoniousHeaderView()
                 
-                SummaryCategoryView(categories: $selectedCategory) // Updated binding
+                SummaryCategoryView(categories: $selectedCategory)
 
                 List {
-                    CircleGraphView(receiptController: controller, selectedCategories: selectedCategory) // Pass selected categories
-                    .frame(height: 215)
-                    .listRowBackground(Color.clear)
-//                    BarGraphView(receiptController: controller, selectedCategories: selectedCategory)
-//                        .listRowBackground(Color.clear)
+                    CircleGraphView(receiptController: controller, selectedCategories: selectedCategory)
+                        .listRowBackground(Color.clear)
+                    
                     HeatMapView(receiptController: controller)
                         .listRowBackground(Color.clear)
                         .padding(.horizontal)
                         .padding(.top, -20)
+                    
+                    ForEach(receiptController.categories.sorted(), id: \.self) { category in
+                        let currentMonthTotal = receiptController.receipts
+                            .filter { $0.category == category && $0.date.month == ReceiptDate().month }
+                            .reduce(0) { $0 + $1.amount }
+                        
+                        let averageMonthTotal = receiptController.receipts
+                            .filter { $0.category == category }
+                            .reduce(0) { $0 + $1.amount } / 12 // Assuming a 12-month average
+                        
+                        CategoryCellView(
+                            category: category,
+                            currentMonthTotal: currentMonthTotal,
+                            averageMonthTotal: averageMonthTotal
+                        )
+                        .listRowBackground(Color.clear)
+                    }
                 }
                 .listStyle(PlainListStyle())
                 .listRowSeparator(.hidden)
@@ -57,11 +73,17 @@ struct GraphsView: View {
                 .frame(maxWidth: .infinity)
             }
             .padding(.bottom, 20)
-
         }
         .background(Color.lightGreen.ignoresSafeArea())
         .onChange(of: selectedCategory) { newValue in
-            print("Selected Categories: \(newValue)") // Debugging print statement
+            print("Selected Categories: \(newValue)")
         }
+        .onTapGesture {
+            hideKeyboard()
+        }
+    }
+
+    func hideKeyboard() {
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
 }

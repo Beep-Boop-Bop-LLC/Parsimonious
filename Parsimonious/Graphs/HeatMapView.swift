@@ -11,47 +11,59 @@ struct HeatMapView: View {
     @ObservedObject var receiptController: ReceiptController
     let calendar = Calendar.current
     let daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+   
+    private var currentMonth: Date {
+        let now = Date()
+        return calendar.date(from: calendar.dateComponents([.year, .month], from: now))!
+    }
 
     var body: some View {
         VStack {
-            ScrollView(.horizontal) {
-                HStack(alignment: .top) {
-                    ForEach(monthsWithReceipts(), id: \.self) { month in
-                        VStack {
-                            Text(monthName(for: month))
-                                .font(.headline)
-                                .foregroundColor(.lightBeige)
-                            Text("\(currentMonthReceiptCount()) Receipts")
-                                .foregroundColor(.lightBeige.opacity(0.7))
-                                .font(.subheadline)
+            ScrollViewReader { scrollView in
+                ScrollView(.horizontal) {
+                    HStack(alignment: .top) {
+                        // Sort the months to have the current month last
+                        ForEach(monthsWithReceipts().sorted(by: { $0 > $1 }), id: \.self) { month in
+                            VStack {
+                                Text(monthName(for: month))
+                                    .font(.headline)
+                                    .foregroundColor(.lightBeige)
+                                Text("\(currentMonthReceiptCount(for: month)) Receipts")
+                                    .foregroundColor(.lightBeige.opacity(0.7))
+                                    .font(.subheadline)
 
-                            // Day labels
-                            dayLabels()
+                                // Day labels
+                                dayLabels()
 
-                            // Create a grid for each week of the month
-                            let (daysInMonth, firstWeekday) = daysInMonthInfo(for: month)
-                            let totalRows = (daysInMonth + firstWeekday - 1) / 7 + 1
+                                // Create a grid for each week of the month
+                                let (daysInMonth, firstWeekday) = daysInMonthInfo(for: month)
+                                let totalRows = (daysInMonth + firstWeekday - 1) / 7 + 1
 
-                            ForEach(0..<totalRows, id: \.self) { week in
-                                weekRow(for: week, daysInMonth: daysInMonth, firstWeekday: firstWeekday)
+                                ForEach(0..<totalRows, id: \.self) { week in
+                                    weekRow(for: week, daysInMonth: daysInMonth, firstWeekday: firstWeekday, month: month)
+                                }
                             }
+                            .padding(.horizontal, 4)
+                            .id(month) // Add this line to uniquely identify each month
                         }
-                        .padding(.horizontal, 4)
+                    }
+                    .padding()
+                }
+                .onAppear {
+                    if let lastMonth = monthsWithReceipts().last {
+                        scrollView.scrollTo(lastMonth, anchor: .trailing) // Scroll to the current month
                     }
                 }
-                .padding()
+                .scrollIndicators(.never)
             }
             .padding(1)
         }
     }
-
-    // Add a new function to count the number of receipts for the current month
-    private func currentMonthReceiptCount() -> Int {
-        let currentMonth = calendar.component(.month, from: Date())
-        let currentYear = calendar.component(.year, from: Date())
-
+    // Update: Count receipts for the given month, not just the current month
+    private func currentMonthReceiptCount(for month: Date) -> Int {
+        let monthComponents = calendar.dateComponents([.month, .year], from: month)
         return receiptController.receipts.filter {
-            $0.date.month == currentMonth && $0.date.year == currentYear
+            $0.date.year == monthComponents.year && $0.date.month == monthComponents.month
         }.count
     }
 
@@ -75,12 +87,12 @@ struct HeatMapView: View {
     }
 
     // Create a week row
-    private func weekRow(for week: Int, daysInMonth: Int, firstWeekday: Int) -> some View {
+    private func weekRow(for week: Int, daysInMonth: Int, firstWeekday: Int, month: Date) -> some View {
         HStack(spacing: 4) {
             ForEach(0..<7, id: \.self) { day in
                 let dateIndex = day + (week * 7) - firstWeekday + 1
                 if dateIndex > 0 && dateIndex <= daysInMonth {
-                    let date = getDateForDay(dayIndex: dateIndex, month: monthsWithReceipts()[0])
+                    let date = getDateForDay(dayIndex: dateIndex, month: month)
                     let count = receiptCount(for: date)
                     daySquare(for: count)
                 } else {
@@ -130,7 +142,6 @@ struct HeatMapView: View {
     }
 
     // Get the weekday (1 = Sunday) of the first day of the month
-    // Adjust this function to make sure Sunday is the first day of the week
     func firstDayOfMonthWeekday(for date: Date) -> Int {
         var calendar = Calendar.current
         calendar.firstWeekday = 1 // Set Sunday as the first day of the week
@@ -141,7 +152,6 @@ struct HeatMapView: View {
         // Adjust to make it zero-based (0 = Sunday, 1 = Monday, etc.)
         return (weekday - calendar.firstWeekday + 7) % 7
     }
-
 
     // Get a specific date for a day index within a month
     func getDateForDay(dayIndex: Int, month: Date) -> Date {

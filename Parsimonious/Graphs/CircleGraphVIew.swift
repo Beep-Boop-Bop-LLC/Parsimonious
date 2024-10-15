@@ -81,6 +81,7 @@ struct CircleGraphView: View {
                     Text("\(Int(currentMonthProgress * 100))%")
                         .font(.largeTitle)
                         .fontWeight(.heavy)
+                        .multilineTextAlignment(.center)
                         .foregroundColor(.lightBeige)
                 }
                 .frame(width: 150, height: 150)
@@ -89,9 +90,11 @@ struct CircleGraphView: View {
                 VStack(spacing: 5) { // Add spacing for better appearance
                     Text("Month Total: $\(currentMonthTotal, specifier: "%.2f")")
                         .font(.headline)
+                        .multilineTextAlignment(.center)
                         .foregroundColor(.lightBeige)
                     Text("Budget: $\(budgetedAmount, specifier: "%.2f")")
                         .font(.subheadline)
+                        .multilineTextAlignment(.center)
                         .foregroundColor(.lightBeige.opacity(0.7))
                 }
                 .padding(.top, 20)
@@ -126,9 +129,11 @@ struct CircleGraphView: View {
                 VStack(spacing: 5) { // Add spacing for better appearance
                     Text("Last 7 Days: $\(last7DaysTotal, specifier: "%.2f")")
                         .font(.headline)
+                        .multilineTextAlignment(.center)
                         .foregroundColor(.lightBeige)
                     Text("Budget: ~$\(budgetedAmount / 4, specifier: "%.2f")/Week")
                         .font(.subheadline)
+                        .multilineTextAlignment(.center)
                         .foregroundColor(.lightBeige.opacity(0.7))
                 }
                 .padding(.top, 20)
