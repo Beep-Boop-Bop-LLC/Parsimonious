@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct GraphView: View {
+struct GraphsView: View {
     
     @EnvironmentObject var controller: ReceiptController
     @State private var selectedCategory: Set<String> = []

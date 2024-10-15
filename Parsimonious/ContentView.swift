@@ -24,7 +24,7 @@ struct ContentView: View {
                     Label("Reciepts", systemImage: "list.number")
                 }
                 .tag(1)
-            GraphView()
+            GraphsView()
                 .tabItem {
                     Label("Summary", systemImage: "chart.pie")
                 }
