@@ -10,7 +10,10 @@ struct CircleGraphView: View {
     @ObservedObject var receiptController: ReceiptController
     var selectedCategories: Set<String>
 
-    let budgetedAmount: Double = 2000.0
+    // Add a state variable to hold the budget amount as a string
+    @State private var budgetAmount: String = "$2000.00"
+    @FocusState private var isFocused: Bool
+    
     let calendar = Calendar.current
 
     // Calculate the total of receipts for the current month based on selected categories
@@ -52,99 +55,114 @@ struct CircleGraphView: View {
 
     // Calculate the progress based on the total receipts of the current month
     var currentMonthProgress: Double {
-        currentMonthTotal / budgetedAmount
+        guard let budget = Double(budgetAmount.filter { "0123456789.".contains($0) }), budget > 0 else { return 0 }
+        return currentMonthTotal / budget
     }
 
     // Calculate the progress based on the total receipts of the last 7 days
     var last7DaysProgress: Double {
-        last7DaysTotal / (budgetedAmount / 4) // Divide budgeted amount by 4 for weekly budget
+        guard let budget = Double(budgetAmount.filter { "0123456789.".contains($0) }), budget > 0 else { return 0 }
+        return last7DaysTotal / (budget / 4) // Divide budgeted amount by 4 for weekly budget
     }
 
     var body: some View {
-        HStack {
-            VStack {
-                // Circle chart for current month
-                ZStack {
-                    Circle()
-                        .stroke(lineWidth: 20)
-                        .opacity(0.3)
-                        .foregroundColor(.lightBeige.opacity(0.7))
-
-                    Circle()
-                        .trim(from: 0.0, to: min(currentMonthProgress, 1.0))
-                        .stroke(style: StrokeStyle(lineWidth: 20, lineCap: .round, lineJoin: .round))
-                        .foregroundColor(currentMonthProgressColor)
-                        .rotationEffect(Angle(degrees: 270)) // Start the circle from the top
-                        .animation(.easeInOut(duration: 0.5), value: currentMonthProgress) // Add animation here
-                    
-                    // Percentage text in the center
-                    Text("\(Int(currentMonthProgress * 100))%")
-                        .font(.largeTitle)
-                        .fontWeight(.heavy)
-                        .multilineTextAlignment(.center)
-                        .foregroundColor(.lightBeige)
-                }
-                .frame(width: 150, height: 150)
-
-                // Moved the text into this VStack for better alignment
-                VStack(spacing: 5) { // Add spacing for better appearance
-                    Text("Month Total: $\(currentMonthTotal, specifier: "%.2f")")
-                        .font(.headline)
-                        .multilineTextAlignment(.center)
-                        .foregroundColor(.lightBeige)
-                    Text("Budget: $\(budgetedAmount, specifier: "%.2f")")
-                        .font(.subheadline)
-                        .multilineTextAlignment(.center)
-                        .foregroundColor(.lightBeige.opacity(0.7))
-                }
-                .padding(.top, 20)
-                .frame(width: 150, alignment: .center) // Center the text under the circle
+        VStack{
+            HStack{
+                Spacer()
+                BudgetAmountView(
+                    budgetAmount: $budgetAmount, // Bind budgetAmount
+                    focus: $isFocused,           // Focus state
+                    category: "Overall Budget"
+                )
+                Spacer()
             }
-            .padding()
-
-            VStack {
-                // Circle chart for last 7 days
-                ZStack {
-                    Circle()
-                        .stroke(lineWidth: 20)
-                        .opacity(0.3)
-                        .foregroundColor(.lightBeige.opacity(0.7))
-
-                    Circle()
-                        .trim(from: 0.0, to: min(last7DaysProgress, 1.0))
-                        .stroke(style: StrokeStyle(lineWidth: 20, lineCap: .round, lineJoin: .round))
-                        .foregroundColor(last7DaysProgressColor)
-                        .rotationEffect(Angle(degrees: 270)) // Start the circle from the top
-                        .animation(.easeInOut(duration: 0.5), value: last7DaysProgress) // Add animation here
+            HStack {
+                VStack {
+                    // Circle chart for current month
+                    ZStack {
+                        Circle()
+                            .stroke(lineWidth: 20)
+                            .opacity(0.3)
+                            .foregroundColor(.lightBeige.opacity(0.7))
+                        
+                        Circle()
+                            .trim(from: 0.0, to: min(currentMonthProgress, 1.0))
+                            .stroke(style: StrokeStyle(lineWidth: 20, lineCap: .round, lineJoin: .round))
+                            .foregroundColor(currentMonthProgressColor)
+                            .rotationEffect(Angle(degrees: 270)) // Start the circle from the top
+                            .animation(.easeInOut(duration: 0.5), value: currentMonthProgress) // Add animation here
+                        
+                        // Percentage text in the center
+                        Text("\(Int(currentMonthProgress * 100))%")
+                            .font(.largeTitle)
+                            .fontWeight(.heavy)
+                            .multilineTextAlignment(.center)
+                            .foregroundColor(.lightBeige)
+                    }
+                    .frame(width: 150, height: 150)
                     
-                    // Percentage text in the center
-                    Text("\(Int(last7DaysProgress * 100))%")
-                        .font(.largeTitle)
-                        .foregroundColor(.lightBeige)
-                        .fontWeight(.heavy)
+                    VStack(spacing: 5) { // Add spacing for better appearance
+                        Text("Month Total: $\(currentMonthTotal, specifier: "%.2f")")
+                            .font(.headline)
+                            .minimumScaleFactor(0.5)
+                            .multilineTextAlignment(.center)
+                            .foregroundColor(.lightBeige)
+                        Text("Budget: \(budgetAmount)")
+                            .font(.subheadline)
+                            .minimumScaleFactor(0.5)
+                            .multilineTextAlignment(.center)
+                            .foregroundColor(.lightBeige.opacity(0.7))
+                    }
+                    .padding(.top, 20)
+                    .frame(width: 150, alignment: .center) // Center the text under the circle
                 }
-                .frame(width: 150, height: 150)
-
-                // Moved the text into this VStack for better alignment
-                VStack(spacing: 5) { // Add spacing for better appearance
-                    Text("Last 7 Days: $\(last7DaysTotal, specifier: "%.2f")")
-                        .font(.headline)
-                        .multilineTextAlignment(.center)
-                        .foregroundColor(.lightBeige)
-                    Text("Budget: ~$\(budgetedAmount / 4, specifier: "%.2f")/Week")
-                        .font(.subheadline)
-                        .multilineTextAlignment(.center)
-                        .foregroundColor(.lightBeige.opacity(0.7))
+                .padding()
+                
+                VStack {
+                    ZStack {
+                        Circle()
+                            .stroke(lineWidth: 20)
+                            .opacity(0.3)
+                            .foregroundColor(.lightBeige.opacity(0.7))
+                        
+                        Circle()
+                            .trim(from: 0.0, to: min(last7DaysProgress, 1.0))
+                            .stroke(style: StrokeStyle(lineWidth: 20, lineCap: .round, lineJoin: .round))
+                            .foregroundColor(last7DaysProgressColor)
+                            .rotationEffect(Angle(degrees: 270)) // Start the circle from the top
+                            .animation(.easeInOut(duration: 0.5), value: last7DaysProgress) // Add animation here
+                        
+                        // Percentage text in the center
+                        Text("\(Int(last7DaysProgress * 100))%")
+                            .font(.largeTitle)
+                            .minimumScaleFactor(0.5)
+                            .foregroundColor(.lightBeige)
+                            .fontWeight(.heavy)
+                    }
+                    .frame(width: 150, height: 150)
+                    
+                    VStack(spacing: 5) { // Add spacing for better appearance
+                        Text("Last 7 Days: $\(last7DaysTotal, specifier: "%.2f")")
+                            .font(.headline)
+                            .minimumScaleFactor(0.5)
+                            .multilineTextAlignment(.center)
+                            .foregroundColor(.lightBeige)
+                        Text("Budget: ~$\(Double(budgetAmount.filter { "0123456789.".contains($0) }) ?? 0 / 4, specifier: "%.2f")/Week")
+                            .font(.subheadline)
+                            .minimumScaleFactor(0.1)
+                            .multilineTextAlignment(.center)
+                            .foregroundColor(.lightBeige.opacity(0.7))
+                    }
+                    .padding(.top, 20)
+                    .frame(width: 150, alignment: .center) // Center the text under the circle
                 }
-                .padding(.top, 20)
-                .frame(width: 150, alignment: .center) // Center the text under the circle
+                .padding()
             }
-            .padding()
+            .onChange(of: selectedCategories) { newValue in
+                print("CircleGraphView - Updated Selected Categories: \(newValue)") // Debugging print statement
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center) // Ensure the view is centered
         }
-        .onChange(of: selectedCategories) { newValue in
-            print("CircleGraphView - Updated Selected Categories: \(newValue)") // Debugging print statement
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center) // Ensure the view is centered
     }
 
     // Define color based on current month progress

@@ -23,7 +23,7 @@ struct HeatMapView: View {
                 ScrollView(.horizontal) {
                     HStack(alignment: .top) {
                         // Sort the months to have the current month last
-                        ForEach(monthsWithReceipts().sorted(by: { $0 > $1 }), id: \.self) { month in
+                        ForEach(monthsWithReceipts().sorted(by: { $0 < $1 }), id: \.self) { month in
                             VStack {
                                 Text(monthName(for: month))
                                     .font(.headline)
@@ -50,7 +50,7 @@ struct HeatMapView: View {
                     .padding()
                 }
                 .onAppear {
-                    if let lastMonth = monthsWithReceipts().last {
+                    if let lastMonth = monthsWithReceipts().first {
                         scrollView.scrollTo(lastMonth, anchor: .trailing) // Scroll to the current month
                     }
                 }

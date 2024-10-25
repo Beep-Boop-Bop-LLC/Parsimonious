@@ -4,14 +4,13 @@
 //
 //  Created by Zach Venanzi on 10/11/24.
 //
-
 import SwiftUI
+import MessageUI
 
 struct GraphsView: View {
-    
     @ObservedObject var receiptController = ReceiptController()
     @EnvironmentObject var controller: ReceiptController
-    @State private var selectedCategory: Set<String> = []
+    @State private var selectedCategory: Set<String> = [] // Change to Set<String>
 
     var categories: [String] {
         let allCategories = ["All"]
@@ -49,23 +48,18 @@ struct GraphsView: View {
                         .listRowBackground(Color.clear)
                         .padding(.horizontal)
                         .padding(.top, -20)
-                    
-                    ForEach(receiptController.categories.sorted(), id: \.self) { category in
-                        let currentMonthTotal = receiptController.receipts
-                            .filter { $0.category == category && $0.date.month == ReceiptDate().month }
-                            .reduce(0) { $0 + $1.amount }
-                        
-                        let averageMonthTotal = receiptController.receipts
-                            .filter { $0.category == category }
-                            .reduce(0) { $0 + $1.amount } / 12 // Assuming a 12-month average
-                        
-                        CategoryCellView(
-                            category: category,
-                            currentMonthTotal: currentMonthTotal,
-                            averageMonthTotal: averageMonthTotal
-                        )
+
+//                    SendEmailButton(receiptController: receiptController, selectedCategory: $selectedCategory)
+//                        .listRowBackground(Color.clear)
+                    CatCell(
+                                    budget: 500.00,
+                                    currentSum: 350.00,
+                                    averageSum: 300.00,
+                                    relativePercentChangeCurrent: 20.00,
+                                    relativePercentChangeAverage: 10.00
+                                )
                         .listRowBackground(Color.clear)
-                    }
+
                 }
                 .listStyle(PlainListStyle())
                 .listRowSeparator(.hidden)
