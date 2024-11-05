@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct HeatMapView: View {
-    @ObservedObject var receiptController: ReceiptController
+    @EnvironmentObject var controller: ReceiptController
     let calendar = Calendar.current
     let daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
    
@@ -62,7 +62,7 @@ struct HeatMapView: View {
     // Update: Count receipts for the given month, not just the current month
     private func currentMonthReceiptCount(for month: Date) -> Int {
         let monthComponents = calendar.dateComponents([.month, .year], from: month)
-        return receiptController.receipts.filter {
+        return controller.receipts.filter {
             $0.date.year == monthComponents.year && $0.date.month == monthComponents.month
         }.count
     }
@@ -125,7 +125,7 @@ struct HeatMapView: View {
 
     // Filter months to show only those with receipts
     func monthsWithReceipts() -> [Date] {
-        let monthsWithReceipts = Set(receiptController.receipts.map { receipt in
+        let monthsWithReceipts = Set(controller.receipts.map { receipt in
             let receiptDate = receipt.date
             let components = DateComponents(year: receiptDate.year, month: receiptDate.month)
             return calendar.date(from: components)!
@@ -162,7 +162,7 @@ struct HeatMapView: View {
     // Count the number of receipts for a specific date
     func receiptCount(for date: Date) -> Int {
         let receiptDate = ReceiptDate.fromString(dateString(from: date))
-        return receiptController.receipts.filter { $0.date == receiptDate }.count
+        return controller.receipts.filter { $0.date == receiptDate }.count
     }
 
     // Convert a Date object to a string that matches ReceiptDate format

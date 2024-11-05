@@ -7,7 +7,7 @@
 import SwiftUI
 
 struct CircleGraphView: View {
-    @ObservedObject var receiptController: ReceiptController
+    @EnvironmentObject var controller: ReceiptController
     var selectedCategories: Set<String>
 
     // Add a state variable to hold the budget amount as a string
@@ -22,7 +22,7 @@ struct CircleGraphView: View {
         let currentYear = calendar.component(.year, from: Date())
 
         // Filter receipts based on selected categories and current month/year
-        let receiptsForCurrentMonth = receiptController.receipts.filter { receipt in
+        let receiptsForCurrentMonth = controller.receipts.filter { receipt in
             (selectedCategories.isEmpty || selectedCategories.contains(receipt.category)) && // Only include selected categories
             receipt.date.month == currentMonth &&
             receipt.date.year == currentYear
@@ -36,7 +36,7 @@ struct CircleGraphView: View {
         let last7DaysStart = calendar.date(byAdding: .day, value: -7, to: Date())!
 
         // Filter receipts based on selected categories and last 7 days
-        let receiptsForLast7Days = receiptController.receipts.filter { receipt in
+        let receiptsForLast7Days = controller.receipts.filter { receipt in
             (selectedCategories.isEmpty || selectedCategories.contains(receipt.category)) && // Only include selected categories
             toDate(receipt.date) >= last7DaysStart // Convert ReceiptDate to Date for comparison
         }

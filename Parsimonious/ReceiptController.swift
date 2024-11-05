@@ -11,6 +11,7 @@ class ReceiptController: ObservableObject {
     
     @Published var categories: Set<String> = Set(["Groceries", "Rent", "Transportation", "Entertainment", "Utilities"])
     @Published var receipts: [Receipt] = []
+    @Published var categoriesToBudgets: [String: Float] = Dictionary(uniqueKeysWithValues: ["Groceries", "Rent", "Transportation", "Entertainment", "Utilities"].map { ($0, 0) })
     
     var descriptionsToCategories: [String: String] = [:]
     
@@ -26,8 +27,8 @@ class ReceiptController: ObservableObject {
     
     func insertTestReceipts() {
         let cats: [String] = Array(categories)
-        var startDate = ReceiptDate(2023, 10, 14)
-        for i in 0..<730 {
+        var startDate = ReceiptDate(2023, 12, 14)
+        for i in 0..<300 {
             let receipt = Receipt(date: startDate, description: "Debug receipt \(i)", note: "Debug note blah blah blah", category: cats[Int.random(in: 0..<categories.count)], amount: Double.random(in: 0.0..<100.0))
             receipts.append(receipt)
             descriptionsToCategories[receipt.description.lowercased()] = receipt.category
@@ -57,6 +58,10 @@ class ReceiptController: ObservableObject {
                 }
             }
         }
+        
+        if let retrievedDictionary = UserDefaults.standard.dictionary(forKey: StorageKeys.BUDGETS) as? [String: Double] {
+            categoriesToBudgets = retrievedDictionary.mapValues { Float($0) }
+        }
     }
     
     func storeInCache() {
@@ -80,18 +85,24 @@ class ReceiptController: ObservableObject {
         let receiptData: [Data] = receipts.map { receipt in
             return (try? encoder.encode(receipt)) ?? Data()
         }
-
+        
         UserDefaults.standard.set(categoriesData, forKey: StorageKeys.CATEGORIES)
         UserDefaults.standard.set(receiptData, forKey: StorageKeys.RECEIPTS)
+        
+        let doubleDictionary = categoriesToBudgets.mapValues { Double($0) }
+
+        UserDefaults.standard.set(doubleDictionary, forKey: StorageKeys.BUDGETS)
     }
     
     func addCategory(_ category: String) {
         categories.insert(category)
+        categoriesToBudgets[category] = 0
         storeInCache()
     }
     
     func removeCategory(_ category: String) {
         categories.remove(category)
+        categoriesToBudgets.removeValue(forKey: category)
         storeInCache()
     }
     
@@ -264,4 +275,5 @@ struct ReceiptDate: Hashable, Comparable, Codable, Equatable {
 struct StorageKeys {
     static var CATEGORIES = "Categories"
     static var RECEIPTS = "Receipts"
+    static var BUDGETS = "Budgets"
 }

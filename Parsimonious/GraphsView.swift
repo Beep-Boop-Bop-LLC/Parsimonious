@@ -8,9 +8,9 @@ import SwiftUI
 import MessageUI
 
 struct GraphsView: View {
-    @ObservedObject var receiptController = ReceiptController()
+    
     @EnvironmentObject var controller: ReceiptController
-    @State private var selectedCategory: Set<String> = [] // Change to Set<String>
+    @State private var selectedCategory: Set<String> = []
 
     var categories: [String] {
         let allCategories = ["All"]
@@ -40,38 +40,27 @@ struct GraphsView: View {
                 
                 SummaryCategoryView(categories: $selectedCategory)
 
-                List {
-                    CircleGraphView(receiptController: controller, selectedCategories: selectedCategory)
+                ScrollView {
+                    CircleGraphView(selectedCategories: selectedCategory)
                         .listRowBackground(Color.clear)
                     
-                    HeatMapView(receiptController: controller)
+                    HeatMapView()
                         .listRowBackground(Color.clear)
                         .padding(.horizontal)
                         .padding(.top, -20)
 
-//                    SendEmailButton(receiptController: receiptController, selectedCategory: $selectedCategory)
-//                        .listRowBackground(Color.clear)
-                    CatCell(
-                                    budget: 500.00,
-                                    currentSum: 350.00,
-                                    averageSum: 300.00,
-                                    relativePercentChangeCurrent: 20.00,
-                                    relativePercentChangeAverage: 10.00
-                                )
-                        .listRowBackground(Color.clear)
-
+                    ForEach(Array(selectedCategory).sorted(), id: \.self) { category in
+                        if category != "All" {
+                            CatCell(category)
+                        }
+                    }
                 }
-                .listStyle(PlainListStyle())
-                .listRowSeparator(.hidden)
-                .scrollContentBackground(.hidden)
-                .frame(maxWidth: .infinity)
+                .background(Color.clear) // Set ScrollView background to clear
+
             }
             .padding(.bottom, 20)
         }
         .background(Color.lightGreen.ignoresSafeArea())
-        .onChange(of: selectedCategory) { newValue in
-            print("Selected Categories: \(newValue)")
-        }
         .onTapGesture {
             hideKeyboard()
         }

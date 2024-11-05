@@ -8,37 +8,71 @@
 import SwiftUI
 
 struct CatCell: View {
-    let categoryName: String = "Groceries"
-    let budget: Double
-    let currentSum: Double
-    let averageSum: Double
-    let relativePercentChangeCurrent: Double
-    let relativePercentChangeAverage: Double
+    
+    @EnvironmentObject var controller: ReceiptController
+    @State private var budgetText: String = "$0.00"
+
+    let category: String
+    var budget: Float {
+        get {
+            controller.categoriesToBudgets[category] ?? 0
+        }
+    }
+    var currentSum: Double {
+        let today = ReceiptDate()
+        let month = today.month
+        let year = today.year
+        return controller.receipts.reduce(0, { partialResult, receipt in
+            if (receipt.category == category && receipt.date.month == month && receipt.date.year == year) {
+                return partialResult + receipt.amount
+            } else {
+                return partialResult
+            }
+        })
+    }
+    let averageSum: Double = 0
+    let relativePercentChangeCurrent: Double = 0
+    let relativePercentChangeAverage: Double = 0
+    
+    init(_ category: String) {
+        self.category = category
+    }
     
     var body: some View {
             VStack(alignment: .leading, spacing: 2) {
                 HStack{
                     VStack{
                         HStack {
-                            Text(categoryName)
+                            Text(category)
                                 .font(.largeTitle)
                                 .fontWeight(.medium)
                                 .foregroundColor(.lightBeige)
                             Spacer()
                         }
                         HStack {
-                            Text("$\(String(format: "%.2f", currentSum))") //This will be the current sum of all receipts in the month
+                            Text("$\(String(format: "%.2f", currentSum)) / ") //This will be the current sum of all receipts in the month
                                 .font(.title2)
                                 .fontWeight(.medium)
                                 .minimumScaleFactor(0.5)
 
                                 .foregroundColor(.lightBeige)
-                            Text("/ $500") ///This will be a TEXTFIELD where you will then be able to input your budgets for category
+                            // Replace Text with TextField for budget input
+                            TextField("Budget", text: $budgetText)
                                 .font(.title2)
+                                .keyboardType(.decimalPad)
                                 .fontWeight(.medium)
                                 .minimumScaleFactor(0.5)
-
                                 .foregroundColor(.lightBeige.opacity(0.7))
+                                .onChange(of: budgetText) { _, newValue in
+                                    let filtered = newValue.filter { "0123456789".contains($0) }
+                                    // Parse to integer and update amountInCents
+                                    if let cents = Int(filtered) {
+                                        controller.categoriesToBudgets[category] = Float(cents)/100.0
+                                        budgetText = "$\(String(format: "%.2f", Float(cents)/100.0))"
+                                        controller.storeInCache()
+                                    }
+                                }
+
                             Spacer()
                         }
                         HStack {
@@ -98,6 +132,9 @@ struct CatCell: View {
                         .frame(width: 100, height: 100) // Adjusted size for centering
                         .contentShape(Circle()) // Ensure the touchable area is circular
                 }
+            }
+            .onAppear {
+                self.budgetText = "$\(String(format: "%.2f", controller.categoriesToBudgets[category] ?? 0.0))"
             }
             .padding()
             .background(Color.white.opacity(0.1))

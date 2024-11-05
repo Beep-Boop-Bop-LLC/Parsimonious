@@ -109,7 +109,7 @@ struct MailView: UIViewControllerRepresentable {
 struct SendEmailButton: View {
     @State private var result: Result<MFMailComposeResult, Error>?
     @State private var isShowingMailView = false
-    @ObservedObject var receiptController: ReceiptController
+    @EnvironmentObject var receiptController: ReceiptController
     @Binding var selectedCategory: Set<String> // Change to Binding<Set<String>>
 
     var body: some View {
@@ -133,7 +133,7 @@ struct SendEmailButton: View {
                     .frame(width: 300, height: 300) // Set a larger frame size
             }
             .sheet(isPresented: $isShowingMailView) {
-                MailView(result: $result, isShowingMailView: $isShowingMailView, receipts: actualReceipts(), circleGraphView: CircleGraphView(receiptController: receiptController, selectedCategories: selectedCategory))
+                MailView(result: $result, isShowingMailView: $isShowingMailView, receipts: actualReceipts(), circleGraphView: CircleGraphView(selectedCategories: selectedCategory))
             }
             Spacer()
         }
