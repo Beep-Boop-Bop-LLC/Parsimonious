@@ -18,7 +18,27 @@ struct ReceiptListView: View {
     var body: some View {
         ZStack {
             List {
-                ForEach(receipts, id: \.self) { receipt in
+                ForEach(receipts.sorted(by: { r1, r2 in
+                    if r1.date.year > r2.date.year {
+                        return true
+                    } else if r1.date.year < r2.date.year {
+                        return false
+                    }
+                    
+                    if r1.date.month > r2.date.month {
+                        return true
+                    } else if r1.date.month < r2.date.month {
+                        return false
+                    }
+                    
+                    if r1.date.day > r2.date.day {
+                        return true
+                    } else if r1.date.day < r2.date.day {
+                        return false
+                    } else {
+                        return r1.amount > r2.amount
+                    }
+                }), id: \.self) { receipt in
                     ZStack {
                         HStack {
                             DateView(receipt.date)

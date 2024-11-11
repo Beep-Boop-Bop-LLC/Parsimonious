@@ -18,25 +18,25 @@ class ReceiptController: ObservableObject {
     init() {
         retrieveFromCache()
         
-        /*
-         Delete this after testing.
-         This call will insert test data
-         */
-        insertTestReceipts()
+//        /*
+//         Delete this after testing.
+//         This call will insert test data
+//         */
+//        insertTestReceipts()
     }
     
-    func insertTestReceipts() {
-        let cats: [String] = Array(categories)
-        var startDate = ReceiptDate(2023, 12, 14)
-        for i in 0..<300 {
-            let receipt = Receipt(date: startDate, description: "Debug receipt \(i)", note: "Debug note blah blah blah", category: cats[Int.random(in: 0..<categories.count)], amount: Double.random(in: 0.0..<100.0))
-            receipts.append(receipt)
-            descriptionsToCategories[receipt.description.lowercased()] = receipt.category
-            if i % 2 == 0 {
-                startDate = startDate.dayAfter()
-            }
-        }
-    }
+//    func insertTestReceipts() {
+//        let cats: [String] = Array(categories)
+//        var startDate = ReceiptDate(2024, 6, 12)
+//        for i in 0..<300 {
+//            let receipt = Receipt(date: startDate, description: "Debug receipt \(i)", note: "Debug note blah blah blah", category: cats[Int.random(in: 0..<categories.count)], amount: Double.random(in: 0.0..<100.0))
+//            receipts.append(receipt)
+//            descriptionsToCategories[receipt.description.lowercased()] = receipt.category
+//            if i % 2 == 0 {
+//                startDate = startDate.dayAfter()
+//            }
+//        }
+//    }
     
     func retrieveFromCache() {
         let decoder = JSONDecoder()
@@ -65,15 +65,15 @@ class ReceiptController: ObservableObject {
     }
     
     func storeInCache() {
-        /*
-         Remove this code after removing test data vvvvvv
-         */
-        receipts = receipts.filter({ receipt in
-            return !receipt.description.starts(with: "Debug")
-        })
-        /*
-         End of code to remove ^^^^
-         */
+//        /*
+//         Remove this code after removing test data vvvvvv
+//         */
+//        let newReceipts = receipts.filter({ receipt in
+//            return !receipt.description.starts(with: "Debug")
+//        })
+//        /*
+//         End of code to remove ^^^^
+//         */
         
         let categoriesArray: [String] = Array(categories)
         let encoder = JSONEncoder()

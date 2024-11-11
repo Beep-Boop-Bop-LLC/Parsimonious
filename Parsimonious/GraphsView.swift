@@ -10,12 +10,6 @@ import MessageUI
 struct GraphsView: View {
     
     @EnvironmentObject var controller: ReceiptController
-    @State private var selectedCategory: Set<String> = []
-
-    var categories: [String] {
-        let allCategories = ["All"]
-        return allCategories + controller.categories.sorted()
-    }
 
     var body: some View {
         ZStack {
@@ -38,10 +32,8 @@ struct GraphsView: View {
             VStack {
                 ParsimoniousHeaderView()
                 
-                SummaryCategoryView(categories: $selectedCategory)
-
                 ScrollView {
-                    CircleGraphView(selectedCategories: selectedCategory)
+                    CircleGraphView()
                         .listRowBackground(Color.clear)
                     
                     HeatMapView()
@@ -49,10 +41,8 @@ struct GraphsView: View {
                         .padding(.horizontal)
                         .padding(.top, -20)
 
-                    ForEach(Array(selectedCategory).sorted(), id: \.self) { category in
-                        if category != "All" {
-                            CatCell(category)
-                        }
+                    ForEach(Array(controller.categories).sorted(), id: \.self) { category in
+                        CatCell(category)
                     }
                 }
                 .background(Color.clear) // Set ScrollView background to clear
