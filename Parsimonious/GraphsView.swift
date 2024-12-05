@@ -40,10 +40,10 @@ struct GraphsView: View {
                         .listRowBackground(Color.clear)
                         .padding(.horizontal)
                         .padding(.top, -20)
-
                     ForEach(Array(controller.categories).sorted(), id: \.self) { category in
                         CatCell(category)
                     }
+                    MailView()
                 }
                 .background(Color.clear) // Set ScrollView background to clear
 
