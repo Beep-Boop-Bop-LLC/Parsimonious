@@ -41,7 +41,10 @@ struct GraphsView: View {
                         .padding(.horizontal)
                         .padding(.top, -20)
                     ForEach(Array(controller.categories).sorted(), id: \.self) { category in
-                        CatCell(category)
+                        NavigationLink(destination: ReceiptListViewController(categories: .constant([category]), title: category)
+                                        .environmentObject(controller)) {
+                            CatCell(category)
+                        }
                     }
                     MailView()
                 }

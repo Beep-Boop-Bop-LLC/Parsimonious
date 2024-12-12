@@ -85,9 +85,8 @@ struct CatCell: View {
                                     controller.categoriesToBudgets[category] = Float(cents)/100.0
                                     budgetText = "$\(String(format: "%.2f", Float(cents)/100.0))"
                                     controller.storeInCache()
-                                }
                             }
-
+                        }
                         Spacer()
                     }
                     HStack {

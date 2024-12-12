@@ -20,9 +20,8 @@ struct HeatMapView: View {
     var body: some View {
         VStack {
             ScrollViewReader { scrollView in
-                ScrollView(.horizontal) {
-                    HStack(alignment: .top) {
-                        // Sort the months to have the current month last
+                ScrollView(.horizontal, showsIndicators: false) {
+                    LazyHStack(alignment: .top, spacing: 0) {
                         ForEach(monthsWithReceipts().sorted(by: { $0 < $1 }), id: \.self) { month in
                             VStack {
                                 Text(monthName(for: month))
@@ -32,10 +31,8 @@ struct HeatMapView: View {
                                     .foregroundColor(.lightBeige.opacity(0.7))
                                     .font(.subheadline)
 
-                                // Day labels
                                 dayLabels()
 
-                                // Create a grid for each week of the month
                                 let (daysInMonth, firstWeekday) = daysInMonthInfo(for: month)
                                 let totalRows = (daysInMonth + firstWeekday - 1) / 7 + 1
 
@@ -44,18 +41,20 @@ struct HeatMapView: View {
                                 }
                             }
                             .padding(.horizontal, 4)
-                            .id(month) // Add this line to uniquely identify each month
+                            .frame(width: UIScreen.main.bounds.width) // Each month occupies full screen width
+                            .id(month)
                         }
                     }
-                    .padding()
-                }
-                .onAppear {
-                    if let lastMonth = monthsWithReceipts().first {
-                        scrollView.scrollTo(lastMonth, anchor: .trailing) // Scroll to the current month
+                    .onAppear {
+                        if let lastMonth = monthsWithReceipts().first {
+                            DispatchQueue.main.async {
+                                scrollView.scrollTo(lastMonth, anchor: .center) // Scroll to center the current month
+                            }
+                        }
                     }
                 }
-                .scrollIndicators(.never)
             }
+
             .padding(1)
         }
     }
