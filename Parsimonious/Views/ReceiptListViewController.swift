@@ -42,6 +42,32 @@ struct ReceiptListViewController: View {
     var receipts: [Receipt] {
         controller.receipts.filter { categories.contains($0.category) }.reversed()
     }
+    
+    // Calculate the average number of receipts per month, excluding the current month
+    var averageReceiptsPerMonth: Double {
+        let completedMonths = groupedReceipts.filter { $0.0 != currentMonthName }
+        let monthsCount = completedMonths.count
+        guard monthsCount > 0 else { return 0 }
+        let totalReceipts = completedMonths.reduce(0) { $0 + $1.1.count }
+        return Double(totalReceipts) / Double(monthsCount)
+    }
+
+    // Calculate the average total per month, excluding the current month
+    var averageTotalPerMonth: Double {
+        let completedMonths = groupedReceipts.filter { $0.0 != currentMonthName }
+        let monthsCount = completedMonths.count
+        guard monthsCount > 0 else { return 0 }
+        let totalAmount = completedMonths.reduce(0) { $0 + $1.1.reduce(0) { $0 + $1.amount } }
+        return totalAmount / Double(monthsCount)
+    }
+
+    // Helper to get the current month in the same format as the groupedReceipts keys
+    var currentMonthName: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMMM yyyy"
+        return formatter.string(from: Date())
+    }
+
 
     var body: some View {
         ZStack {
@@ -63,10 +89,18 @@ struct ReceiptListViewController: View {
             
             ZStack {
                 VStack {
-                    Text(title)
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-                        .foregroundColor(.lightBeige)
+                    // Title and Averages
+                    VStack {
+                        Text(title)
+                            .font(.largeTitle)
+                            .fontWeight(.bold)
+                            .foregroundColor(.lightBeige)
+                        Text(String(format: "Avg. Receipts: %.1f | Avg. Total: $%.2f",
+                                    averageReceiptsPerMonth,
+                                    averageTotalPerMonth))
+                            .font(.subheadline)
+                            .foregroundColor(.lightBeige.opacity(0.8))
+                    }
                     List {
                         ForEach(groupedReceipts, id: \.0) { (month, receipts) in
                             Section(
@@ -79,7 +113,6 @@ struct ReceiptListViewController: View {
                                         .font(.headline)
                                         .foregroundColor(.lightBeige.opacity(0.8))
                                 }
-                                    .padding(.vertical, 8)
                             ) {
                                 ForEach(receipts.sorted(by: { r1, r2 in
                                     if r1.date.year > r2.date.year {
@@ -126,26 +159,25 @@ struct ReceiptListViewController: View {
                                         }
                                         .padding() // Optional padding for content inside the cell
                                     }
+                                    .listRowBackground(Color.clear) // Set each row's background to white
                                     .frame(maxHeight: 100)
                                     .listRowInsets(EdgeInsets()) // Remove default insets to extend the background
                                 }
                                 .onDelete(perform: { indexSet in
                                     deleteReceipt(at: indexSet, from: receipts)
                                 }) // Enable swipe-to-delete
-                                .listRowBackground(Color.clear) // Set each row's background to white
                             }
                         }
                     }
                     .listRowSpacing(3)
-                    .listStyle(PlainListStyle())
+                    .listStyle(DefaultListStyle())
+                    .scrollContentBackground(.hidden) // Makes the list background transparent
                     .padding(.bottom, 20)
                     .padding(.top, 20)
                 }
-
             }
         }
         .background(Color.lightGreen.ignoresSafeArea())
-
     }
     
     // Function to delete receipts
