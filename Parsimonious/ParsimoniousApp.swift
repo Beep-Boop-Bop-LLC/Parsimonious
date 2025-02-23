@@ -25,4 +25,12 @@ extension Color {
     static let lightGreen = Color(red: 159 / 255, green: 179 / 255, blue: 150 / 255)
     static let midGreen = Color(red: 96 / 255, green: 124 / 255, blue: 99 / 255)
     static let darkGreen = Color(red: 67 / 255, green: 103 / 255, blue: 88 / 255)
+    static let gradient = LinearGradient(
+            gradient: Gradient(colors: [
+                Color.darkGreen.opacity(0.1),
+                Color.darkGreen.opacity(0.95)
+            ]),
+            startPoint: .top,
+            endPoint: .bottom
+    )
 }

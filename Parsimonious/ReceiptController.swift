@@ -270,6 +270,13 @@ struct ReceiptDate: Hashable, Comparable, Codable, Equatable {
                 return "January"
         }
     }
+    
+    func formatted(style: String = "MMM d, yyyy") -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = style
+        guard let date = self.toDate() else { return "\(month)/\(day)" } // Fallback
+        return formatter.string(from: date)
+    }
 }
 
 struct StorageKeys {

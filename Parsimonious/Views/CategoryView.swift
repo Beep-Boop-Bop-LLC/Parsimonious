@@ -40,7 +40,7 @@ struct CategoryView: View {
                             }
                         }) {
                             if category == "" {
-                                TextField("[Category]", text: $newCategory)
+                                TextField("", text: $newCategory)
                                     .customTextField()
                                     .focused($newCategoryFocus)
                                     .onSubmit {
@@ -49,6 +49,14 @@ struct CategoryView: View {
                                         newCategoryFocus = false
                                         selection = String(newCategory)
                                     }
+                                    .onChange(of: newCategoryFocus) { isFocused in
+                                        if !isFocused {
+                                            controller.addCategory(newCategory)
+                                            isNewCategory = false
+                                            newCategoryFocus = false
+                                            selection = String(newCategory)
+                                        }
+                                }
                             } else {
                                 Text(category)
                                     .font(.system(size: 20, weight: .semibold))

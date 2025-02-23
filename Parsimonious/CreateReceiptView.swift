@@ -10,6 +10,7 @@ import UIKit // Import UIKit for haptic feedback
 
 struct CreateReceiptView: View {
     @EnvironmentObject var controller: ReceiptController
+    @State private var isShowingSlideShow = false
     
     @State var inputAmount: String = "$0.00"
     @State var inputDescription: String = ""
@@ -45,10 +46,21 @@ struct CreateReceiptView: View {
                 
                 DescriptionView(description: $inputDescription, focusDescription: $focusDescription, focusAmount: $focusAmount, selection: $selectedCategory)
                 
-                NoteView(note: $inputNote)
+                //NoteView(note: $inputNote)
                 
                 CategoryView(selection: $selectedCategory)
                 
+                Button(action: {
+                    isShowingSlideShow.toggle() // Toggle the presentation of the SlideShowView
+                }) {
+                    Text("How to use Parsimonious")
+                        .foregroundColor(Color.lightBeige.opacity(0.5))
+                        .underline()
+                }
+                .sheet(isPresented: $isShowingSlideShow) {
+                    SlideShowView() // Present the SlideShowView when the button is pressed
+                }
+
                 Spacer()
                 
                 AddReceiptView(amount: $inputAmount, description: $inputDescription, note: $inputNote, category: $selectedCategory, completion: {

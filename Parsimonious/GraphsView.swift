@@ -49,9 +49,11 @@ struct GraphsView: View {
                 ParsimoniousHeaderView()
                 
                 ScrollView {
-                    CircleGraphView()
-                        .listRowBackground(Color.clear)
-                    
+                    ReceiptChartView(controller: controller)
+                        .environmentObject(controller) // 
+//                    CircleGraphView()
+//                        .listRowBackground(Color.clear)
+//                    
                     HeatMapView()
                         .listRowBackground(Color.clear)
                         .padding(.horizontal)

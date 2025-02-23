@@ -11,7 +11,8 @@ struct CatCell: View {
     
     @EnvironmentObject var controller: ReceiptController
     @State private var budgetText: String = "$0.00"
-
+    @State private var isFlashing: Bool = false // For flashing background
+    
     let category: String
     var budget: Float {
         get {
@@ -72,21 +73,35 @@ struct CatCell: View {
 
                             .foregroundColor(.lightBeige)
                         // Replace Text with TextField for budget input
-                        TextField("Budget", text: $budgetText)
-                            .font(.title2)
-                            .keyboardType(.decimalPad)
-                            .fontWeight(.medium)
-                            .minimumScaleFactor(0.5)
-                            .foregroundColor(.lightBeige.opacity(0.7))
-                            .onChange(of: budgetText) { _, newValue in
-                                let filtered = newValue.filter { "0123456789".contains($0) }
-                                // Parse to integer and update amountInCents
-                                if let cents = Int(filtered) {
-                                    controller.categoriesToBudgets[category] = Float(cents)/100.0
-                                    budgetText = "$\(String(format: "%.2f", Float(cents)/100.0))"
-                                    controller.storeInCache()
-                            }
-                        }
+                            TextField("Budget", text: $budgetText)
+                                   .font(.title2)
+                                   .keyboardType(.decimalPad)
+                                   .fontWeight(.medium)
+                                   .minimumScaleFactor(0.5)
+                                   .foregroundColor(.lightBeige.opacity(0.7))
+                                   .background(isFlashing ? Color.red.opacity(0.3) : Color.clear) // Flashing background
+                                   .cornerRadius(6)
+                                   .onChange(of: budgetText) { _, newValue in
+                                       let filtered = newValue.filter { "0123456789".contains($0) }
+                                       // Parse to integer and update amountInCents
+                                       if let cents = Int(filtered) {
+                                           controller.categoriesToBudgets[category] = Float(cents) / 100.0
+                                           budgetText = "$\(String(format: "%.2f", Float(cents) / 100.0))"
+                                           controller.storeInCache()
+                                       }
+
+                                       // Stop flashing if the value changes
+                                       if budgetText != "$0.00" {
+                                           stopFlashing()
+                                       } else {
+                                           startFlashing()
+                                       }
+                                   }
+                                   .onAppear {
+                                       if budgetText == "$0.00" {
+                                           startFlashing()
+                                       }
+                                   }
                         Spacer()
                     }
                     HStack {
@@ -146,10 +161,22 @@ struct CatCell: View {
         let progress = thisMonth/Double(budget)
         if progress < 0.85 {
             return .darkGreen
-        } else if progress < 1.0 {
+        } else if progress < 1.01 {
             return .yellow.opacity(0.5)
         } else {
             return .red.opacity(0.5)
         }
     }
+    
+    private func startFlashing() {
+            withAnimation(Animation.easeInOut(duration: 0.5).repeatForever(autoreverses: true)) {
+                isFlashing = true
+            }
+        }
+
+        private func stopFlashing() {
+            withAnimation {
+                isFlashing = false
+            }
+        }
 }
