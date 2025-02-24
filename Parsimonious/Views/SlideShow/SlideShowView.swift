@@ -24,6 +24,7 @@ struct SlideShowView: View {
                     .tag(1)
                 
                 // Third screen: Plain color (placeholder for now)
+                ColorPaletteView()
                 Color.green
                     .tag(2)
             }

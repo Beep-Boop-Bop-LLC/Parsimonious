@@ -53,16 +53,29 @@ struct ReceiptChartView: View {
     // Header displaying the weekly total and range
     private func weekHeader(weekData: [DailyReceiptData]) -> some View {
         let totalSpent = weekData.compactMap { $0.amount }.reduce(0, +) // Total spent in the week
-        let totalDays = weekData.count // Always 7 days in a full week
-        let averageSpent = totalDays > 0 ? totalSpent / Double(totalDays) : 0 // Average per day
-        
+        let today = Date()
+        let totalSpentToday = weekData
+            .filter { $0.date.toDate() != nil && Calendar.current.isDate($0.date.toDate()!, inSameDayAs: today) }
+            .compactMap { $0.amount }
+            .reduce(0, +)
+        let calendar = Calendar.current
+        let weekStart = calendar.startOfDay(for: weekData.first?.date.toDate() ?? today) // First day of the week
+        let weekEnd = calendar.date(byAdding: .day, value: 6, to: weekStart) ?? today
+        let isCurrentWeek = calendar.isDate(today, equalTo: weekStart, toGranularity: .weekOfYear)
+
+        // Calculate average spent per day (only for old weeks)
+        let totalDays = weekData.filter { $0.amount != nil }.count
+        let averageSpent = totalDays > 0 ? totalSpent / Double(totalDays) : 0
+
+
         return VStack(spacing: 4) { // Stack everything neatly
             // Top Section - Total and Average Spent
             HStack {
                 // Left Section - Total Money Spent
                 VStack(alignment: .center) {
-                    Text("Total Spent")
+                    Text("Weekly")
                         .font(.headline)
+                        .fontWeight(.heavy)
                         .padding(.top, 1)
                         .foregroundStyle(Color.lightBeige) // Themed X-axis labels
                     Text("$\(totalSpent, specifier: "%.2f")")
@@ -77,19 +90,20 @@ struct ReceiptChartView: View {
                     .frame(height: 50) // Keeps it compact
 
                 // Right Section - Average Spent Per Day
+                // Right Section - Total Spent Today
                 VStack(alignment: .center) {
-                    Text("AVG. Spent")
+                    Text(isCurrentWeek ? "Today" : "AVG. Spent") // ✅ Show "Today" for current, "AVG. Spent" for past
                         .font(.headline)
+                        .fontWeight(.heavy)
                         .padding(.top, 1)
-                        .foregroundStyle(Color.lightBeige) // Themed X-axis labels
-                    
-                    Text("$\(averageSpent, specifier: "%.2f")")
+                        .foregroundStyle(Color.lightBeige)
+
+                    Text("$\(isCurrentWeek ? totalSpentToday : averageSpent, specifier: "%.2f")") // ✅ Show correct value
                         .font(.largeTitle)
                         .bold()
-                        .foregroundStyle(Color.lightBeige) // Themed X-axis labels
-
+                        .foregroundStyle(Color.lightBeige)
                 }
-                .frame(maxWidth: .infinity) // Ensures even space distribution
+                .frame(maxWidth: .infinity)
             }
             
             // Bottom Section - Week Date Range

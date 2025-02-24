@@ -69,7 +69,7 @@ struct CreateReceiptView: View {
                     notificationGenerator.notificationOccurred(.success)
 
                     completion()
-                    inputAmount = "$0.00"
+                    inputAmount = ""
                     inputDescription = ""
                     inputNote = ""
                     selectedCategory = nil

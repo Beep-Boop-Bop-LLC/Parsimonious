@@ -16,28 +16,18 @@ struct DescriptionView: View {
     @Binding var selection: String?
     
     var body: some View {
-        ZStack {
-            if description.isEmpty {
-                Text("x")
-                    .font(.system(size: 25, weight: .semibold))
-                    .foregroundColor(.darkGreen)
-                    .shadow(color: .black.opacity(0.2), radius: 5, x: 2, y: 2) // Adjust shadow parameters here
-                    .frame(maxWidth: .infinity, alignment: .center)
+        TextField("info", text: $description)
+            .customTextField()
+            .focused($focusDescription)
+            .onSubmit {
+                focusDescription = false
+                focusAmount = true
             }
-            TextField("", text: $description)
-                .customTextField()
-                .focused($focusDescription)
-                .onSubmit {
-                    focusDescription = false
-                    focusAmount = true
+            .onChange(of: description) { _, description in
+                if let categoryMatch = controller.retrieveCategory(description) {
+                    selection = categoryMatch
                 }
-                .onChange(of: description) { _, description in
-                    if let categoryMatch = controller.retrieveCategory(description) {
-                        selection = categoryMatch
-                    }
-                }
-        }
+            }
     }
-    
 }
 

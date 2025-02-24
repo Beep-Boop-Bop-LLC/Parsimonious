@@ -49,6 +49,8 @@ struct GraphsView: View {
                 ParsimoniousHeaderView()
                 
                 ScrollView {
+                    HorizontalBarGraph()
+                    
                     ReceiptChartView(controller: controller)
                         .environmentObject(controller) // 
 //                    CircleGraphView()

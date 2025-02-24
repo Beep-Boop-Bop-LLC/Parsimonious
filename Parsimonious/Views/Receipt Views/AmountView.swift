@@ -13,7 +13,7 @@ struct AmountView: View {
     @FocusState.Binding var focus: Bool
     
     var body: some View {
-        TextField("Amount", text: $amount)
+        TextField("$0.00", text: $amount)
             .customTextField()
             .font(.system(size: 70, weight: .heavy))
             .shadow(color: .black.opacity(0.1), radius: 5, x: 2, y: 2) // Adjust shadow parameters here
