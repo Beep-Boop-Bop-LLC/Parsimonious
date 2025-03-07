@@ -7,6 +7,13 @@
 import SwiftUI
 
 struct FirstScreenView: View {
+    
+    let points = [
+            ("Efficient", "Prioritizing seamless receipt input."),
+            ("Simple", "No excess, just inputing receipts and budgets."),
+            ("Export", "Download a CSV of your receipts for use in Excel, Google Sheets, or any analysis tool.")
+        ]
+    
     var body: some View {
         ZStack {
             Image("Parsimonious")
@@ -27,36 +34,42 @@ struct FirstScreenView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity) //
             
             VStack {
-                Spacer()
                 Text("Welcome to Parsimonious!")
                     .font(.largeTitle)
                     .fontWeight(.bold)
                     .foregroundColor(.white)
                     .multilineTextAlignment(.center)
-                    .padding(.horizontal)
-                
-                Text("The main goal of this app is to most efficiently input and categorize receitps.")
-                    .font(.title2)
-                    .foregroundColor(.white.opacity(0.8))
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal)
-                    .padding(.top, 10)
-                Text("In order to do that, we highly reccomend to turn on notifications on all credit cards using their native app or Apple Wallet. \n\nThis prevents missing or forgetting")
-                    .font(.title2)
-                    .fontWeight(.bold)
-                    .foregroundColor(.white.opacity(0.8))
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal)
-                    .padding(.top, 10)
-                
+                    .padding()
+                VStack(alignment: .center, spacing: 20) {
+                    Text("Our Mission:")
+                        .font(.title2)
+                        .foregroundColor(.white.opacity(0.8))
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal)
+                        .padding(.top, 10)
+                    
+                    ForEach(points, id: \.0) { title, description in
+                        VStack {
+                            Text(title)
+                                .font(.title3)
+                                .fontWeight(.bold)
+                                .foregroundColor(.white)
+                                .multilineTextAlignment(.center)
+                            
+                            Text(description)
+                                .font(.body)
+                                .fontWeight(.semibold)
+                                .foregroundColor(.white.opacity(0.7))
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal, 20)
+                        }
+                        .padding()
+                        .background(Color.white.opacity(0.2))
+                        .cornerRadius(12)
+                        .shadow(radius: 5)
+                    }
+                }
                 Spacer()
-                
-                Image(systemName: "wallet.pass")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 150, height: 150)
-                    .foregroundColor(.white.opacity(0.9))
-                    .padding(.bottom, 50)
             }
         }
         .background(Color.lightGreen.ignoresSafeArea())

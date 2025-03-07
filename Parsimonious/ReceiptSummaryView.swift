@@ -11,36 +11,52 @@ struct ReceiptSummaryView: View {
     
     @EnvironmentObject var controller: ReceiptController
     @State var selectedCategories: Set<String> = Set()
-    
+
     var body: some View {
-        ZStack{
+        ZStack {
+            // Background Image
             Image("Parsimonious")
                 .resizable()
                 .scaledToFill()
-                .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height) // Full screen size
-                .position(x: UIScreen.main.bounds.width / 2, y: UIScreen.main.bounds.height / 2) // Center the image
+                .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
+                .position(x: UIScreen.main.bounds.width / 2, y: UIScreen.main.bounds.height / 2)
                 .opacity(0.04)
-                .ignoresSafeArea() // Extend beyond safe areas
-            
+                .ignoresSafeArea()
+
+            // Gradient Overlay
             LinearGradient(
                 gradient: Gradient(colors: [Color.midGreen.opacity(0.2), Color.midGreen.opacity(0.8)]),
                 startPoint: .top,
                 endPoint: .bottom
             )
-            
-            .ignoresSafeArea(edges: .all) // Ensures the gradient extends beyond the safe area
-            .frame(maxWidth: .infinity, maxHeight: .infinity) //
-            
-            VStack {
+            .ignoresSafeArea()
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+            VStack(spacing: 0) { // Ensures stable layout
                 ParsimoniousHeaderView()
-                
-                SummaryCategoryView(categories: $selectedCategories)
-                
-                ReceiptListView(categories: $selectedCategories)
 
+                ScrollView {
+                    Text("Recent Receipts")
+                        .font(.headline)
+                        .foregroundColor(.lightBeige)
+                        .padding(.leading)
+
+                    ReceiptListView(categories: $selectedCategories)
+
+                    List(Array(controller.categories).sorted(), id: \.self) { category in
+                        NavigationLink(destination: ReceiptListViewController(categories: .constant([category]), title: category)
+                                        .environmentObject(controller)) {
+                            CatCell(category)
+                        }
+                    }
+                    .listStyle(PlainListStyle()) // ✅ Ensures a clean appearance
+                    .frame(maxHeight: 300) // ✅ Prevents excessive resizing
+
+                }
             }
-            .padding(.bottom, 20) // Add some padding at the bottom for scrolling
 
+            .frame(maxHeight: UIScreen.main.bounds.height - 20)
+            .padding(.bottom, 20) // Padding at the bottom for smooth scrolling
         }
         .background(Color.lightGreen.ignoresSafeArea())
         .onAppear {

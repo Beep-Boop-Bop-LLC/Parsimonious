@@ -9,6 +9,10 @@ import SwiftUI
 
 
 struct SecondScreenView: View {
+    
+    let categories = ["Home", "Utilities", "Groceries"]
+    @State private var selectedCategory = "Groceries" // Default selection
+
     var body: some View {
         ZStack {
             Image("Parsimonious")
@@ -28,76 +32,53 @@ struct SecondScreenView: View {
             .ignoresSafeArea(edges: .all) // Ensures the gradient extends beyond the safe area
             .frame(maxWidth: .infinity, maxHeight: .infinity) //
             VStack {
-                Text("Every Receipt must have the following:")
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
-                    .foregroundColor(.white)
-                    .multilineTextAlignment(.center)
-                    .padding()
-                Text("$10")
+                Spacer()
+                Text("$10.00")
+                    .customTextField()
                     .font(.system(size: 70, weight: .heavy))
                     .shadow(color: .black.opacity(0.1), radius: 5, x: 2, y: 2) // Adjust shadow parameters here
-                    .foregroundColor(.darkGreen)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal)
-                Text("An Amount")
-                    .font(.title3)
-                    .foregroundColor(.white.opacity(0.8))
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal)
-                    .underline()
-                Text("Pizza")
-                    .font(.system(size: 45, weight: .heavy))
+                Text("Vegetables")
+                    .customTextField()
                     .shadow(color: .black.opacity(0.1), radius: 5, x: 2, y: 2) // Adjust shadow parameters here
-                    .foregroundColor(.darkGreen)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal)
-                Text("A Description")
-                    .font(.title3)
-                    .foregroundColor(.white.opacity(0.8))
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal)
-                    .underline()
-                HStack{
-                    Text("Home")
-                        .font(.system(size: 20, weight: .semibold))
-                        .foregroundColor(.darkGreen)
-                        .shadow(color: .black.opacity(0.2), radius: 5, x: 2, y: 2) // Adjust shadow parameters here
-                        .padding()
-                        //.background(selection == category ? Color.lightBeige : Color.clear)
-                    Text("Food")
-                        .font(.system(size: 20, weight: .semibold))
-                        .foregroundColor(.darkGreen)
-                        .shadow(color: .black.opacity(0.2), radius: 5, x: 2, y: 2) // Adjust shadow parameters here
-                        .padding()
-                        .background(Color.lightBeige)
-                        .cornerRadius(8)
-                    Text("Utilities")
-                        .font(.system(size: 20, weight: .semibold))
-                        .foregroundColor(.darkGreen)
-                        .shadow(color: .black.opacity(0.2), radius: 5, x: 2, y: 2) // Adjust shadow parameters here
-                        .padding()
-                        //.background(selection == category ? Color.lightBeige : Color.clear)
-                }
-                Text("A Category")
-                    .font(.title3)
-                    .foregroundColor(.white.opacity(0.8))
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal)
-                    .underline()
-                Text("Press and hold on categories to delete them. Or add by selecting the '+'")
+                HStack(spacing: 10) {
+                        ForEach(categories, id: \.self) { category in
+                            Text(category)
+                                .font(.system(size: 20, weight: .semibold))
+                                .foregroundColor(category == selectedCategory ? .darkGreen : .lightBeige) // Green text for both
+                                .padding()
+                                .background(category == selectedCategory ? Color.white : Color.clear) // White background for selected
+                                .cornerRadius(8)
+                                .shadow(color: category == selectedCategory ? .black.opacity(0.2) : .clear, radius: 5, x: 2, y: 2)
+                                .onTapGesture {
+                                    selectedCategory = category
+                                }
+                        }
+                            }
+                Text("Add")
                     .font(.system(size: 20, weight: .semibold))
-                    .foregroundColor(.darkGreen)
-                    .shadow(color: .black.opacity(0.2), radius: 5, x: 2, y: 2) // Adjust shadow parameters here
                     .padding()
-                    .frame(alignment: .center)
-                Text("Categories will be automatically switched to if there is a prior receipt with the same description.")
-                    .font(.system(size: 20, weight: .semibold))
-                    .foregroundColor(.darkGreen)
-                    .shadow(color: .black.opacity(0.2), radius: 5, x: 2, y: 2) // Adjust shadow parameters here
+                    .foregroundColor(.lightBeige)
+                    .frame(maxWidth: .infinity)
+                    .shadow(color: .black.opacity(0.2), radius: 5, x: 2, y: 2)
+                    .padding(.horizontal)
+                    .background(Color.lightBeige.opacity(0.4))
+                    .cornerRadius(8)
                     .padding()
-                    .frame(alignment: .center)
                 Spacer()
+                Text("""
+                • Amount: $10.00
+                • Description: Vegetables
+                • Category: Groceries.
+
+                This is a complete receipt, and a confirmation is that the Add button turns white.
+                """)
+                .font(.title3)
+                .foregroundColor(Color.darkGreen.opacity(0.4))
+                .multilineTextAlignment(.center)
+                .padding()
+
+                Spacer()
+
 
                 
             }

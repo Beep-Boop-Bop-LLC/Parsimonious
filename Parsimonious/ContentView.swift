@@ -18,19 +18,21 @@ struct ContentView: View {
                     Label("Add Receipt", systemImage: "plus.circle")
                 }
                 .tag(0)
-            
-//            ReceiptSummaryView()
-//                .tabItem {
-//                    Label("Reciepts", systemImage: "list.number")
-//                }
-//                .tag(1)
+//            NavigationView {
+//                ReceiptSummaryView()
+//            }
+//                    .tabItem {
+//                        Label("Reciepts", systemImage: "list.number")
+//                    }
+//                    .tag(1)
+//            
             NavigationView {
-                            GraphsView()
-                        }
-                        .tabItem {
-                            Label("Summary", systemImage: "chart.pie")
-                        }
-                        .tag(1)
+            GraphsView()
+                }
+                .tabItem {
+                    Label("Summary", systemImage: "chart.pie")
+                }
+                .tag(2)
         }
         .accentColor(.darkGreen)
         .preferredColorScheme(.dark) // Apply dark mode to SwiftUI views

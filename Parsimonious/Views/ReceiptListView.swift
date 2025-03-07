@@ -17,7 +17,7 @@ struct ReceiptListView: View {
 
     var body: some View {
         ZStack {
-            List {
+            VStack {
                 ForEach(receipts.sorted(by: { r1, r2 in
                     if r1.date.year > r2.date.year {
                         return true
@@ -38,41 +38,36 @@ struct ReceiptListView: View {
                     } else {
                         return r1.amount > r2.amount
                     }
-                }), id: \.self) { receipt in
-                    ZStack {
-                        HStack {
-                            DateView(receipt.date)
-                                .frame(maxHeight: 50)
-                            
-                            VStack(alignment: .leading) {
-                                Text(receipt.description)
-                                    .font(.body)
-                                    .fontWeight(.heavy)
-                                    .foregroundStyle(Color.lightBeige)
-                                Text(receipt.category)
-                                    .font(.caption2)
-                                    .fontWeight(.heavy)
-                                    .multilineTextAlignment(.leading)
-                                    .foregroundStyle(Color.lightBeige.opacity(0.7))
-                            }
-                            Spacer()
-                            Text(String(format: "$%.2f", receipt.amount))
-                                .font(.largeTitle)
+                })
+                .prefix(5), id: \.self) { receipt in // ✅ Shows only the last 5 receipts
+                    HStack {
+                        DateView(receipt.date)
+                            .frame(maxHeight: 50)
+                        
+                        VStack(alignment: .leading) {
+                            Text(receipt.description)
+                                .font(.body)
                                 .fontWeight(.heavy)
                                 .foregroundStyle(Color.lightBeige)
+                            Text(receipt.category)
+                                .font(.caption2)
+                                .fontWeight(.heavy)
+                                .multilineTextAlignment(.leading)
+                                .foregroundStyle(Color.lightBeige.opacity(0.7))
                         }
-                        .padding() // Optional padding for content inside the cell
+                        Spacer()
+                        Text(String(format: "$%.2f", receipt.amount))
+                            .font(.largeTitle)
+                            .fontWeight(.heavy)
+                            .foregroundStyle(Color.lightBeige)
                     }
-                    .frame(maxHeight: 100)
-                    .listRowInsets(EdgeInsets()) // Remove default insets to extend the background
+                    .frame(maxHeight: 50)
                 }
-                .onDelete(perform: deleteReceipt) // Enable swipe-to-delete
-                .listRowBackground(Color.clear) // Set each row's background to white
             }
-            .listRowSpacing(3)
-            .listStyle(PlainListStyle()) // Keep the inset list style
+            .padding()
         }
     }
+
     
     // Function to delete receipts
     func deleteReceipt(at offsets: IndexSet) {

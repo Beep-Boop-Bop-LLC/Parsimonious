@@ -14,8 +14,6 @@ struct ParsimoniousHeaderView: View {
             .font(.largeTitle)
             .fontWeight(.bold)
             .foregroundColor(.darkGreen)
-            .shadow(color: .black.opacity(0.2), radius: 5, x: 2, y: 2) // Adjust shadow parameters here
-
+            .shadow(color: .black.opacity(0.2), radius: 5, x: 2, y: 2)
     }
-    
 }

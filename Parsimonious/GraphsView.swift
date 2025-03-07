@@ -10,10 +10,11 @@ import MessageUI
 struct GraphsView: View {
     
     @EnvironmentObject var controller: ReceiptController
+    @State private var showWarning = false // Controls warning visibility
+    @State private var animateWarning = false
 
     var recentReceipts: [Receipt] {
         controller.receipts.sorted {
-            // Sort by year, month, day in descending order
             if $0.date.year != $1.date.year {
                 return $0.date.year > $1.date.year
             }
@@ -22,13 +23,19 @@ struct GraphsView: View {
             }
             return $0.date.day > $1.date.day
         }
-        .prefix(3) // Get the 3 most recent receipts
-        .map { $0 } // Convert ArraySlice to Array
+        .prefix(3)
+        .map { $0 }
     }
 
+    var hasZeroBudgetCategory: Bool {
+        return controller.categories.contains { category in
+            (controller.categoriesToBudgets[category] ?? 0.0) == 0.00
+        }
+    }
 
     var body: some View {
         ZStack {
+            // Background elements
             Image("Parsimonious")
                 .resizable()
                 .scaledToFill()
@@ -46,69 +53,84 @@ struct GraphsView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
 
             VStack {
+                // Red Warning Banner with Smooth Animation
+                if showWarning {
+                    HStack {
+                        Text("⚠️ Warning: One or more categories have a budget of $0.00")
+                            .font(.body)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.white)
+                            .padding(.leading)
+                        
+                        Spacer()
+
+                        Button(action: {
+                            withAnimation(.easeOut(duration: 0.3)) {
+                                showWarning = false
+                            }
+                        }) {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundColor(.white)
+                                .font(.title3)
+                                .padding()
+                        }
+                    }
+                    .padding()
+                    .background(Color.red.opacity(0.3))
+                    .cornerRadius(10)
+                    .padding(.horizontal)
+                    .opacity(animateWarning ? 1 : 0)
+                    .offset(y: animateWarning ? 0 : -20) // Slide down effect
+                    .onAppear {
+                        withAnimation(.easeInOut(duration: 0.4)) {
+                            animateWarning = true
+                        }
+                    }
+                }
+
+
+                // Header
                 ParsimoniousHeaderView()
                 
                 ScrollView {
                     HorizontalBarGraph()
                     
                     ReceiptChartView(controller: controller)
-                        .environmentObject(controller) // 
-//                    CircleGraphView()
-//                        .listRowBackground(Color.clear)
-//                    
+                        .environmentObject(controller)
+                    
                     HeatMapView()
                         .listRowBackground(Color.clear)
                         .padding(.horizontal)
                         .padding(.top, -20)
                     
-                    // Add recent receipts
-                    VStack(alignment: .leading, spacing: 10) {
-                        Text("Recent Receipts")
-                            .font(.headline)
-                            .foregroundColor(.lightBeige)
-                            .padding(.leading)
-                        
-                        ForEach(recentReceipts, id: \.self) { receipt in
-                            HStack {
-                                DateView(receipt.date)
-                                    .frame(maxHeight: 40)
-                                
-                                VStack(alignment: .leading) {
-                                    Text(receipt.description)
-                                        .font(.body)
-                                        .foregroundColor(.lightBeige)
-                                    Text(receipt.category)
-                                        .font(.caption2)
-                                        .foregroundColor(.lightBeige.opacity(0.7))
-                                }
-                                Spacer()
-                                Text(String(format: "$%.2f", receipt.amount))
-                                    .font(.body)
-                                    .foregroundColor(.lightBeige)
-                            }
-                            .padding(.horizontal)
-                            .background(Color.lightGreen.opacity(0.2))
-                            .cornerRadius(8)
-                        }
-                    }
                     .padding(.top, 10)
                     
+                    // Category List
                     ForEach(Array(controller.categories).sorted(), id: \.self) { category in
                         NavigationLink(destination: ReceiptListViewController(categories: .constant([category]), title: category)
                                         .environmentObject(controller)) {
                             CatCell(category)
                         }
                     }
+
                     MailView()
                 }
-                .background(Color.clear) // Set ScrollView background to clear
-
+                .background(Color.clear)
             }
             .padding(.bottom, 20)
         }
         .background(Color.lightGreen.ignoresSafeArea())
         .onTapGesture {
             hideKeyboard()
+        }
+        .onAppear {
+            showWarning = hasZeroBudgetCategory // Show warning on load if needed
+        }
+        .onChange(of: controller.categoriesToBudgets) { _ in
+            // Check dynamically if any category becomes $0.00
+            if hasZeroBudgetCategory {
+                showWarning = true
+            }
         }
     }
 

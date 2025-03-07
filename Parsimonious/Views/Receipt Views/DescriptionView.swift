@@ -16,7 +16,7 @@ struct DescriptionView: View {
     @Binding var selection: String?
     
     var body: some View {
-        TextField("info", text: $description)
+        TextField("description", text: $description)
             .customTextField()
             .focused($focusDescription)
             .onSubmit {
