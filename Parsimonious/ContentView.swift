@@ -14,18 +14,12 @@ struct ContentView: View {
     var body: some View {
         TabView(selection: $selectedIndex) {
             CreateReceiptView(completion: { selectedIndex = 1 })
-                .tabItem {
-                    Label("Add Receipt", systemImage: "plus.circle")
-                }
-                .tag(0)
-//            NavigationView {
-//                ReceiptSummaryView()
-//            }
-//                    .tabItem {
-//                        Label("Reciepts", systemImage: "list.number")
-//                    }
-//                    .tag(1)
-//            
+             .tabItem {
+                 Label("Add Receipt", systemImage: "plus.circle")
+             }
+             .tag(0)
+            OCRReceiptView ()
+
             NavigationView {
             GraphsView()
                 }

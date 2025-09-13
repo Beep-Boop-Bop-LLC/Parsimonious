@@ -4,6 +4,7 @@
 //
 //  Created by Nick Venanzi on 9/28/24.
 //
+
 import Foundation
 import SwiftUI
 
@@ -17,26 +18,8 @@ class ReceiptController: ObservableObject {
     
     init() {
         retrieveFromCache()
-        
-//        /*
-//         Delete this after testing.
-//         This call will insert test data
-//         */
-//        insertTestReceipts()
+
     }
-    
-//    func insertTestReceipts() {
-//        let cats: [String] = Array(categories)
-//        var startDate = ReceiptDate(2024, 6, 12)
-//        for i in 0..<300 {
-//            let receipt = Receipt(date: startDate, description: "Debug receipt \(i)", note: "Debug note blah blah blah", category: cats[Int.random(in: 0..<categories.count)], amount: Double.random(in: 0.0..<100.0))
-//            receipts.append(receipt)
-//            descriptionsToCategories[receipt.description.lowercased()] = receipt.category
-//            if i % 2 == 0 {
-//                startDate = startDate.dayAfter()
-//            }
-//        }
-//    }
     
     func retrieveFromCache() {
         let decoder = JSONDecoder()
@@ -122,12 +105,37 @@ class ReceiptController: ObservableObject {
 }
 
 struct Receipt: Identifiable, Hashable, Codable {
-    var id = UUID()
+    var id: UUID
     var date: ReceiptDate
     var description: String
     var note: String?
     var category: String
     var amount: Double
+
+    enum CodingKeys: String, CodingKey {
+        case id, date, description, note, category, amount
+    }
+
+    // 👇 Custom decoding to regenerate UUID if missing
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decodeIfPresent(UUID.self, forKey: .id) ?? UUID()
+        date = try container.decode(ReceiptDate.self, forKey: .date)
+        description = try container.decode(String.self, forKey: .description)
+        note = try container.decodeIfPresent(String.self, forKey: .note)
+        category = try container.decode(String.self, forKey: .category)
+        amount = try container.decode(Double.self, forKey: .amount)
+    }
+
+    // keep synthesized initializer for manual creation
+    init(id: UUID = UUID(), date: ReceiptDate, description: String, note: String?, category: String, amount: Double) {
+        self.id = id
+        self.date = date
+        self.description = description
+        self.note = note
+        self.category = category
+        self.amount = amount
+    }
 }
 
 struct ReceiptDate: Hashable, Comparable, Codable, Equatable {
