@@ -6,15 +6,25 @@
 //
 
 import SwiftUI
+import Firebase
+import FirebaseAuth
+import FirebaseFirestore
 
 @main
 struct ParsimoniousApp: App {
     
     @StateObject var controller: ReceiptController = ReceiptController()
-    
+    @StateObject private var apiKeyStore = APIKeyStore.shared
+
+    init() {
+           FirebaseApp.configure()
+       }
     var body: some Scene {
         WindowGroup {
-            ContentView().environmentObject(controller)
+            ContentView()
+                .environmentObject(controller)
+                .environmentObject(apiKeyStore)   // ✅ available everywhere
+
         }
     }
 }

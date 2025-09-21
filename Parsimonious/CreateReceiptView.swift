@@ -11,14 +11,17 @@ import UIKit // Import UIKit for haptic feedback
 struct CreateReceiptView: View {
     @EnvironmentObject var controller: ReceiptController
     @State private var isShowingSlideShow = false
-    
+    @EnvironmentObject var apiKeyStore: APIKeyStore
     @State var inputAmount: String = "$0.00"
     @State var inputDescription: String = ""
     @State var inputNote: String = ""
     @State var selectedCategory: String?
     @FocusState var focusDescription: Bool
     @FocusState var focusAmount: Bool
-    
+    @State private var pickedImage: UIImage?
+    @State private var showPhotoPicker = false
+    @State private var showCameraPicker = false
+
     var completion: () -> ()
     
     var body: some View {
@@ -50,17 +53,38 @@ struct CreateReceiptView: View {
                 
                 CategoryView(selection: $selectedCategory)
                 
-                Button(action: {
-                    isShowingSlideShow.toggle() // Toggle the presentation of the SlideShowView
-                }) {
-                    Text("How to use Parsimonious")
-                        .foregroundColor(Color.lightBeige.opacity(0.5))
-                        .underline()
-                }
-                .sheet(isPresented: $isShowingSlideShow) {
-                    SlideShowView() // Present the SlideShowView when the button is pressed
-                }
+//                Button(action: {
+//                    isShowingSlideShow.toggle() // Toggle the presentation of the SlideShowView
+//                }) {
+//                    Text("How to use Parsimonious")
+//                        .foregroundColor(Color.lightBeige.opacity(0.5))
+//                        .underline()
+//                }
+//                .sheet(isPresented: $isShowingSlideShow) {
+//                    SlideShowView() // Present the SlideShowView when the button is pressed
+//                }
+//                
+                HStack {
+                    Button("Pick Image") {
+                        showPhotoPicker = true
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.white.opacity(0.2))
+                    .cornerRadius(8)
 
+                    Button("Take Photo") {
+                        if UIImagePickerController.isSourceTypeAvailable(.camera) {
+                            showCameraPicker = true
+                        }
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.white.opacity(0.3))
+                    .cornerRadius(8)
+                }
+                .padding(.horizontal)
+                
                 Spacer()
                 
                 AddReceiptView(amount: $inputAmount, description: $inputDescription, note: $inputNote, category: $selectedCategory, completion: {
@@ -76,6 +100,30 @@ struct CreateReceiptView: View {
                     focusDescription = true
                     focusAmount = false
                 })
+            }
+        }
+        .sheet(isPresented: $showPhotoPicker) {
+            ImagePicker(sourceType: .photoLibrary) { image in
+                analyze(image: image, apiKey: apiKeyStore.apiKey!, controller: controller) { receipt in
+                    if let r = receipt {
+                        inputAmount = "$\(r.amount)"
+                        inputDescription = r.description
+                        inputNote = r.note ?? ""
+                        selectedCategory = r.category
+                    }
+                }
+            }
+        }
+        .sheet(isPresented: $showCameraPicker) {
+            ImagePicker(sourceType: .camera) { image in
+                analyze(image: image, apiKey: apiKeyStore.apiKey!, controller: controller) { receipt in
+                    if let r = receipt {
+                        inputAmount = "$\(r.amount)"
+                        inputDescription = r.description
+                        inputNote = r.note ?? ""
+                        selectedCategory = r.category
+                    }
+                }
             }
         }
         .background(Color.lightGreen.ignoresSafeArea())
