@@ -12,7 +12,8 @@ import FirebaseFirestore
 
 struct ContentView: View {
     @State private var selectedIndex: Int = 0
-
+    @EnvironmentObject var receiptController: ReceiptController
+    
     var body: some View {
         TabView(selection: $selectedIndex) {
             
@@ -21,14 +22,15 @@ struct ContentView: View {
 //                    Label("Camera", systemImage: "camera.fill")
 //                }
 //                .tag(0)
-//            
+//
             CreateReceiptView(completion: { selectedIndex = 1 })
                 .tabItem {
                     Label("Entry", systemImage: "rectangle.and.pencil.and.ellipsis")
                 }
                 .tag(0)
             
-            NavigationView {
+            
+            NavigationStack {
                 GraphsView()
             }
             .tabItem {
@@ -40,6 +42,7 @@ struct ContentView: View {
         .preferredColorScheme(.dark)
         .onAppear {
             signInAndFetchAPIKey()
+            preloadReceiptsFromCSV()
         }
     }
 
@@ -76,6 +79,59 @@ struct ContentView: View {
         }
     }
 }
+
+extension ContentView {
+    func preloadReceiptsFromCSV() {
+        guard let path = Bundle.main.path(forResource: "receipts_all", ofType: "csv") else {
+            print("⚠️ receipts_all.csv not found in bundle")
+            return
+        }
+        
+        do {
+            let csvString = try String(contentsOfFile: path)
+            let rows = csvString.components(separatedBy: "\n").dropFirst() // drop header row
+            
+            var importedReceipts: [Receipt] = []
+            
+            for row in rows {
+                let cols = row.components(separatedBy: ",")
+                guard cols.count >= 6 else { continue } // UUID,Date,Description,Category,Amount,Note
+                
+                let id = UUID(uuidString: cols[0]) ?? UUID()
+                
+                let dateParts = cols[1].split(separator: "-")
+                guard dateParts.count == 3,
+                      let year = Int(dateParts[0]),
+                      let month = Int(dateParts[1]),
+                      let day = Int(dateParts[2]) else { continue }
+                let receiptDate = ReceiptDate(year, month, day)
+                
+                let description = cols[2]
+                let category = cols[3]
+                let amount = Double(cols[4]) ?? 0.0
+                let note = cols.count > 5 ? cols[5] : nil
+                
+                let receipt = Receipt(
+                    id: id,
+                    date: receiptDate,
+                    description: description,
+                    note: note?.isEmpty == true ? nil : note,
+                    category: category,
+                    amount: amount
+                )
+                importedReceipts.append(receipt)
+            }
+            
+            // Store into your controller
+            receiptController.receipts = importedReceipts
+            print("✅ Preloaded \(importedReceipts.count) receipts from receipts_all.csv")
+            
+        } catch {
+            print("❌ Error loading receipts_all.csv: \(error.localizedDescription)")
+        }
+    }
+}
+
 
 struct CustomTextFieldModifier: ViewModifier {
     func body(content: Content) -> some View {

@@ -130,8 +130,17 @@ struct MailComposeView: UIViewControllerRepresentable {
         // Generate CSV data
         let csvFiles = generateCSV()
 
-        mailComposeVC.addAttachmentData(csvFiles.yearToDate, mimeType: "text/csv", fileName: "receipts_YTD.csv")
-        mailComposeVC.addAttachmentData(csvFiles.currentMonth, mimeType: "text/csv", fileName: "receipts \(currentMonthYear).csv")
+        mailComposeVC.addAttachmentData(csvFiles.history,
+                                        mimeType: "text/csv",
+                                        fileName: "receipts_all.csv")
+
+        mailComposeVC.addAttachmentData(csvFiles.yearToDate,
+                                        mimeType: "text/csv",
+                                        fileName: "receipts_YTD.csv")
+
+        mailComposeVC.addAttachmentData(csvFiles.currentMonth,
+                                        mimeType: "text/csv",
+                                        fileName: "receipts_month.csv")
 
         return mailComposeVC
     }
@@ -207,11 +216,14 @@ struct MailComposeView: UIViewControllerRepresentable {
         return formatter.string(from: Date())
     }
 
-    func generateCSV() -> (yearToDate: Data, currentMonth: Data) {
+    func generateCSV() -> (history: Data, yearToDate: Data, currentMonth: Data) {
         let calendar = Calendar.current
         let now = Date()
         let currentYear = calendar.component(.year, from: now)
         let currentMonth = calendar.component(.month, from: now)
+
+        // Filter receipts for history (all receipts)
+        let historyReceipts = receiptController.receipts
 
         // Filter receipts for YTD
         let yearToDateReceipts = receiptController.receipts.filter {
@@ -224,20 +236,25 @@ struct MailComposeView: UIViewControllerRepresentable {
         }
 
         // Generate CSV strings
+        let historyCSVString = generateCSVString(for: historyReceipts)
         let ytdCSVString = generateCSVString(for: yearToDateReceipts)
         let currentMonthCSVString = generateCSVString(for: currentMonthReceipts)
 
         // Convert strings to Data
-        return (Data(ytdCSVString.utf8), Data(currentMonthCSVString.utf8))
+        return (
+            Data(historyCSVString.utf8),
+            Data(ytdCSVString.utf8),
+            Data(currentMonthCSVString.utf8)
+        )
     }
 
     // Helper function to generate CSV string for a given list of receipts
     func generateCSVString(for receipts: [Receipt]) -> String {
-        var csvString = "Date,Description,Category,Amount,Note\n" // Add headers
+        var csvString = "UUID,Date,Description,Category,Amount,Note\n" // Add headers
         for receipt in receipts {
             let date = "\(receipt.date.year)-\(String(format: "%02d", receipt.date.month))-\(String(format: "%02d", receipt.date.day))"
-            let note = receipt.note ?? ""
-            csvString += "\(date),\(receipt.description),\(receipt.category),\(receipt.amount),\(note)\n"
+            let note = receipt.note?.replacingOccurrences(of: ",", with: ";") ?? ""
+            csvString += "\(receipt.id.uuidString),\(date),\(receipt.description),\(receipt.category),\(receipt.amount),\(note)\n"
         }
         return csvString
     }
