@@ -91,13 +91,15 @@ extension ContentView {
             let csvString = try String(contentsOfFile: path)
             let rows = csvString.components(separatedBy: "\n").dropFirst() // drop header row
             
-            var importedReceipts: [Receipt] = []
+            var newReceipts: [Receipt] = []
+            let existingIDs = Set(receiptController.receipts.map { $0.id })
             
             for row in rows {
                 let cols = row.components(separatedBy: ",")
                 guard cols.count >= 6 else { continue } // UUID,Date,Description,Category,Amount,Note
                 
                 let id = UUID(uuidString: cols[0]) ?? UUID()
+                guard !existingIDs.contains(id) else { continue } // skip duplicates
                 
                 let dateParts = cols[1].split(separator: "-")
                 guard dateParts.count == 3,
@@ -119,18 +121,21 @@ extension ContentView {
                     category: category,
                     amount: amount
                 )
-                importedReceipts.append(receipt)
+                newReceipts.append(receipt)
             }
             
-            // Store into your controller
-            receiptController.receipts = importedReceipts
-            print("✅ Preloaded \(importedReceipts.count) receipts from receipts_all.csv")
+            // Append instead of replace
+            let beforeCount = receiptController.receipts.count
+            receiptController.receipts.append(contentsOf: newReceipts)
+            
+            print("✅ Appended \(newReceipts.count) new receipts (now \(receiptController.receipts.count) total, was \(beforeCount))")
             
         } catch {
             print("❌ Error loading receipts_all.csv: \(error.localizedDescription)")
         }
     }
 }
+
 
 
 struct CustomTextFieldModifier: ViewModifier {
