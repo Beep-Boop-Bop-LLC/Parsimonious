@@ -4,6 +4,7 @@
 //
 //  Created by Zach Venanzi on 10/11/24.
 //
+
 import SwiftUI
 import MessageUI
 
@@ -107,10 +108,13 @@ struct GraphsView: View {
                     
                     // Category List
                     ForEach(Array(controller.categories).sorted(), id: \.self) { category in
-                        NavigationLink(destination: ReceiptListViewController(categories: .constant([category]), title: category)
-                                        .environmentObject(controller)) {
+                        NavigationLink(value: category) {
                             CatCell(category)
                         }
+                    }
+                    .navigationDestination(for: String.self) { category in
+                        ReceiptListViewController(categories: .constant([category]), title: category)
+                            .environmentObject(controller)
                     }
 
                     MailView()

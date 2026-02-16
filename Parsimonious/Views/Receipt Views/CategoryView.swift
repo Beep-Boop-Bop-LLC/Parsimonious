@@ -3,6 +3,7 @@
 //  Parsimonious
 //
 //  Created by Nick Venanzi on 10/1/24.
+//  Updated with Adaptive Grid + Rounded Category Tiles
 //
 
 import SwiftUI
@@ -11,86 +12,171 @@ struct CategoryView: View {
     
     @EnvironmentObject var controller: ReceiptController
     @Binding var selection: String?
-    @State var isNewCategory: Bool = false
-    @State var newCategory: String = ""
-    @FocusState var newCategoryFocus: Bool
-    
-    var categories: [String] {
-        var categories = Array(controller.categories)
-        if isNewCategory {
-            categories.append("")
-        }
-        categories.append("+")
-        return categories
-    }
+    @Binding var showPhotoPicker: Bool
+    @Binding var showCameraPicker: Bool
+    @State private var isAddingNew = false
+    @State private var newCategory = ""
+    @FocusState private var focusNewCategory: Bool
+
+    private let columns = [GridItem(.adaptive(minimum: 110), spacing: 12)]
     
     var body: some View {
-        ScrollViewReader { scrollViewProxy in
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 10) {
-                    ForEach(categories, id: \.self) { category in
-                        Button(action: {
-                            if category == "+" {
-                                isNewCategory = true
-                                newCategory = ""
-                                newCategoryFocus = true
-                                selection = newCategory
-                            } else {
-                                selection = category
-                            }
-                        }) {
-                            if category == "" {
-                                TextField("", text: $newCategory)
-                                    .customTextField()
-                                    .focused($newCategoryFocus)
-                                    .onSubmit {
-                                        controller.addCategory(newCategory)
-                                        isNewCategory = false
-                                        newCategoryFocus = false
-                                        selection = String(newCategory)
-                                    }
-                                    .onChange(of: newCategoryFocus) { isFocused in
-                                        if !isFocused {
-                                            controller.addCategory(newCategory)
-                                            isNewCategory = false
-                                            newCategoryFocus = false
-                                            selection = String(newCategory)
-                                        }
-                                }
-                            } else {
-                                Text(category)
-                                    .font(.system(size: 20, weight: .semibold))
-                                    .foregroundColor(selection == category ? .darkGreen : .lightBeige)
-                                    .shadow(color: .black.opacity(0.2), radius: 5, x: 2, y: 2) // Adjust shadow parameters here
-                                    .padding()
-                                    .background(selection == category ? Color.lightBeige : Color.clear)
-                                    .cornerRadius(8)
+        ScrollView {
+            LazyVGrid(columns: columns, spacing: 12) {
+                
+                ForEach(controller.categories.sorted(), id: \.self) { category in
+                    Button {
+                        selection = category
+                    } label: {
+                        Text(category)
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundColor(selection == category ? .darkGreen : .lightBeige)
+                            .padding(.vertical, 12)
+                            .frame(maxWidth: .infinity)
+                            .background(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .fill(selection == category ? Color.lightBeige.opacity(0.25) : Color.black.opacity(0.05))
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 12)
+                                            .stroke(selection == category ? Color.lightBeige.opacity(0.6) : Color.black.opacity(0.1), lineWidth: 1)
+                                    )
+                            )
+                            .shadow(color: .black.opacity(0.15), radius: 3, x: 2, y: 2)
+                    }
+                    .contextMenu {
+                        Button(role: .destructive) {
+                            controller.removeCategory(category)
+                        } label: {
+                            Label("Delete", systemImage: "trash")
+                        }
+                    }
+                }
+                
+                // MARK: - Library Button
+                Button {
+                    showPhotoPicker = true
+                } label: {
+                    VStack(spacing: 6) {
+                        Image(systemName: "photo.on.rectangle")
+                            .font(.system(size: 16, weight: .semibold))
+                    }
+                    .foregroundColor(.lightBeige)
+                    .padding(.vertical, 12)
+                    .frame(maxWidth: .infinity)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color.white.opacity(0.15))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(Color.white.opacity(0.2), lineWidth: 1)
+                            )
+                    )
+                    .shadow(color: .black.opacity(0.15), radius: 3, x: 2, y: 2)
+                }
+                .buttonStyle(.plain)
+                
+                // MARK: - Camera Button
+                Button {
+                    if UIImagePickerController.isSourceTypeAvailable(.camera) {
+                        showCameraPicker = true
+                    }
+                } label: {
+                    VStack(spacing: 6) {
+                        Image(systemName: "camera.fill")
+                            .font(.system(size: 16, weight: .semibold))
+                    }
+                    .foregroundColor(.lightBeige)
+                    .padding(.vertical, 12)
+                    .frame(maxWidth: .infinity)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color.white.opacity(0.2))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(Color.white.opacity(0.25), lineWidth: 1)
+                            )
+                    )
+                    .shadow(color: .black.opacity(0.15), radius: 3, x: 2, y: 2)
+                }
+                .buttonStyle(.plain)
+                
+                // MARK: - Add Category Tile
+                if isAddingNew {
+                    TextField("Enter category name", text: $newCategory)
+                        .font(.system(size: 16, weight: .medium))
+                        .textInputAutocapitalization(.words)
+                        .disableAutocorrection(true)
+                        .focused($focusNewCategory)
+                        .onSubmit(addCategory)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 12)
+                        .background(
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(Color.black.opacity(0.05))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(Color.black.opacity(0.15), lineWidth: 1)
+                                )
+                        )
+                        .shadow(color: .black.opacity(0.08), radius: 3, x: 1, y: 1)
+                        .transition(.scale.combined(with: .opacity))
+                        .animation(.easeInOut(duration: 0.25), value: isAddingNew)
+                } else {
+                    Button {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                            isAddingNew = true
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                focusNewCategory = true
                             }
                         }
-                            .contextMenu {
-                                Button(action: {
-                                    controller.removeCategory(category)
-                                }) {
-                                    Text("Delete")
-                                    Image(systemName: "trash")
-                                }
-                            }
-                            .id(category)
+                    } label: {
+                        HStack(spacing: 6) {
+                            Image(systemName: "plus.circle.fill")
+                                .font(.system(size: 17, weight: .semibold))
+                            Text("New")
+                                .font(.system(size: 16, weight: .semibold))
+                        }
+                        .foregroundColor(.darkGreen)
+                        .padding(.vertical, 12)
+                        .frame(maxWidth: .infinity)
+                        .background(
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(Color.darkGreen.opacity(0.1))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(Color.darkGreen.opacity(0.25), lineWidth: 1)
+                                )
+                        )
+                        .shadow(color: .black.opacity(0.08), radius: 3, x: 1, y: 1)
+                        .contentShape(RoundedRectangle(cornerRadius: 12))
+                        .hoverEffect(.highlight) // subtle tactile feedback on iPad/macOS
                     }
-                }
-                .padding(.horizontal)
-                .onChange(of: selection) { _, newCategory in
-                    withAnimation {
-                        scrollViewProxy.scrollTo(newCategory, anchor: .center)
-                    }
+                    .buttonStyle(.plain)
                 }
             }
-            .frame(maxWidth: .infinity)
-            .frame(height: 60)
-
-            .onAppear {
-                newCategoryFocus = false
-            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
         }
+        .simultaneousGesture(
+            TapGesture()
+                .onEnded { _ in
+                    if focusNewCategory {
+                        focusNewCategory = false
+                    }
+                }
+        )
+        .animation(.easeInOut, value: controller.categories)
+        .animation(.easeInOut, value: isAddingNew)
+    }
+    
+    private func addCategory() {
+        guard !newCategory.trimmingCharacters(in: .whitespaces).isEmpty else {
+            isAddingNew = false
+            return
+        }
+        controller.addCategory(newCategory)
+        selection = newCategory
+        newCategory = ""
+        isAddingNew = false
     }
 }

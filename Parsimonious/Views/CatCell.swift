@@ -142,9 +142,6 @@ struct CatCell: View {
         .background(Color.white.opacity(0.1))
         .cornerRadius(10)
         .shadow(radius: 5)
-        .onTapGesture {
-            hideKeyboard() // Dismiss keyboard when tapping outside
-        }
     }
     
     var circleColor: Color {

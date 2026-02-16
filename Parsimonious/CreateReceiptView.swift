@@ -51,40 +51,20 @@ struct CreateReceiptView: View {
                 
                 //NoteView(note: $inputNote)
                 
-                CategoryView(selection: $selectedCategory)
+                CategoryView(selection: $selectedCategory, showPhotoPicker: $showPhotoPicker, showCameraPicker: $showCameraPicker)
                 
-//                Button(action: {
-//                    isShowingSlideShow.toggle() // Toggle the presentation of the SlideShowView
-//                }) {
-//                    Text("How to use Parsimonious")
-//                        .foregroundColor(Color.lightBeige.opacity(0.5))
-//                        .underline()
-//                }
-//                .sheet(isPresented: $isShowingSlideShow) {
-//                    SlideShowView() // Present the SlideShowView when the button is pressed
-//                }
-//                
-                HStack {
-                    Button("Pick Image") {
-                        showPhotoPicker = true
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.white.opacity(0.2))
-                    .cornerRadius(8)
-
-                    Button("Take Photo") {
-                        if UIImagePickerController.isSourceTypeAvailable(.camera) {
-                            showCameraPicker = true
-                        }
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.white.opacity(0.3))
-                    .cornerRadius(8)
+                // MARK: - Help Button
+                Button(action: {
+                    isShowingSlideShow.toggle()
+                }) {
+                    Text("How to use Parsimonious")
+                        .foregroundColor(Color.lightBeige.opacity(0.5))
+                        .underline()
                 }
-                .padding(.horizontal)
-                
+                .sheet(isPresented: $isShowingSlideShow) {
+                    SlideShowView()
+                }
+
                 Spacer()
                 
                 AddReceiptView(amount: $inputAmount, description: $inputDescription, note: $inputNote, category: $selectedCategory, completion: {

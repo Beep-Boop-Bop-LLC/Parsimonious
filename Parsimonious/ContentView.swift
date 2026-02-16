@@ -32,17 +32,17 @@ struct ContentView: View {
             
             NavigationStack {
                 GraphsView()
-            }
-            .tabItem {
-                Label("Summary", systemImage: "chart.pie")
-            }
-            .tag(1)
+                }
+                .tabItem {
+                    Label("Summary", systemImage: "chart.pie")
+                }
+                .tag(1)
+            
         }
         .accentColor(.darkGreen)
         .preferredColorScheme(.dark)
         .onAppear {
             signInAndFetchAPIKey()
-            preloadReceiptsFromCSV()
         }
     }
 
@@ -79,64 +79,64 @@ struct ContentView: View {
         }
     }
 }
-
-extension ContentView {
-    func preloadReceiptsFromCSV() {
-        guard let path = Bundle.main.path(forResource: "receipts_all", ofType: "csv") else {
-            print("⚠️ receipts_all.csv not found in bundle")
-            return
-        }
-        
-        do {
-            let csvString = try String(contentsOfFile: path)
-            let rows = csvString.components(separatedBy: "\n").dropFirst() // drop header row
-            
-            var newReceipts: [Receipt] = []
-            let existingIDs = Set(receiptController.receipts.map { $0.id })
-            
-            for row in rows {
-                let cols = row.components(separatedBy: ",")
-                guard cols.count >= 6 else { continue } // UUID,Date,Description,Category,Amount,Note
-                
-                let id = UUID(uuidString: cols[0]) ?? UUID()
-                guard !existingIDs.contains(id) else { continue } // skip duplicates
-                
-                let dateParts = cols[1].split(separator: "-")
-                guard dateParts.count == 3,
-                      let year = Int(dateParts[0]),
-                      let month = Int(dateParts[1]),
-                      let day = Int(dateParts[2]) else { continue }
-                let receiptDate = ReceiptDate(year, month, day)
-                
-                let description = cols[2]
-                let category = cols[3]
-                let amount = Double(cols[4]) ?? 0.0
-                let note = cols.count > 5 ? cols[5] : nil
-                
-                let receipt = Receipt(
-                    id: id,
-                    date: receiptDate,
-                    description: description,
-                    note: note?.isEmpty == true ? nil : note,
-                    category: category,
-                    amount: amount
-                )
-                newReceipts.append(receipt)
-            }
-            
-            // Append instead of replace
-            let beforeCount = receiptController.receipts.count
-            receiptController.receipts.append(contentsOf: newReceipts)
-            
-            print("✅ Appended \(newReceipts.count) new receipts (now \(receiptController.receipts.count) total, was \(beforeCount))")
-            
-        } catch {
-            print("❌ Error loading receipts_all.csv: \(error.localizedDescription)")
-        }
-    }
-}
-
-
+//
+//extension ContentView {
+//    func preloadReceiptsFromCSV() {
+//        guard let path = Bundle.main.path(forResource: "receipts_all", ofType: "csv") else {
+//            print("⚠️ receipts_all.csv not found in bundle")
+//            return
+//        }
+//        
+//        do {
+//            let csvString = try String(contentsOfFile: path)
+//            let rows = csvString.components(separatedBy: "\n").dropFirst() // drop header row
+//            
+//            var newReceipts: [Receipt] = []
+//            let existingIDs = Set(receiptController.receipts.map { $0.id })
+//            
+//            for row in rows {
+//                let cols = row.components(separatedBy: ",")
+//                guard cols.count >= 6 else { continue } // UUID,Date,Description,Category,Amount,Note
+//                
+//                let id = UUID(uuidString: cols[0]) ?? UUID()
+//                guard !existingIDs.contains(id) else { continue } // skip duplicates
+//                
+//                let dateParts = cols[1].split(separator: "-")
+//                guard dateParts.count == 3,
+//                      let year = Int(dateParts[0]),
+//                      let month = Int(dateParts[1]),
+//                      let day = Int(dateParts[2]) else { continue }
+//                let receiptDate = ReceiptDate(year, month, day)
+//                
+//                let description = cols[2]
+//                let category = cols[3]
+//                let amount = Double(cols[4]) ?? 0.0
+//                let note = cols.count > 5 ? cols[5] : nil
+//                
+//                let receipt = Receipt(
+//                    id: id,
+//                    date: receiptDate,
+//                    description: description,
+//                    note: note?.isEmpty == true ? nil : note,
+//                    category: category,
+//                    amount: amount
+//                )
+//                newReceipts.append(receipt)
+//            }
+//            
+//            // Append instead of replace
+//            let beforeCount = receiptController.receipts.count
+//            receiptController.receipts.append(contentsOf: newReceipts)
+//            
+//            print("✅ Appended \(newReceipts.count) new receipts (now \(receiptController.receipts.count) total, was \(beforeCount))")
+//            
+//        } catch {
+//            print("❌ Error loading receipts_all.csv: \(error.localizedDescription)")
+//        }
+//    }
+//}
+//
+//
 
 struct CustomTextFieldModifier: ViewModifier {
     func body(content: Content) -> some View {
